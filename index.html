@@ -87,6 +87,11 @@
     50%{ box-shadow: 0 0 38px 10px rgba(255,95,176,1), 0 0 75px 18px rgba(181,102,255,0.8); }
   }
   .btn-glow-strong{ animation: glowPulseStrong 1.4s ease-in-out infinite; }
+  @keyframes borderGlow{
+    0%,100%{ box-shadow: 0 0 6px 1px rgba(181,102,255,0.35); border-color: rgba(181,102,255,0.5); }
+    50%{ box-shadow: 0 0 14px 3px rgba(255,95,176,0.65); border-color: rgba(255,95,176,0.85); }
+  }
+  .btn-border-glow{ animation: borderGlow 1.6s ease-in-out infinite; }
   .grid-bg{
     background-image:
       radial-gradient(circle at 20% 0%, rgba(181,102,255,0.18), transparent 45%),
@@ -166,8 +171,8 @@
     </p>
 
     <div class="mt-7 flex flex-wrap items-center gap-2.5 animate-fade-up" style="animation-delay:200ms">
-      <a href="https://www.youtube.com/@%EC%BC%80%EC%9D%B4%EC%8B%9Ckacy" target="_blank" rel="noopener" class="animate-glow-pulse inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-5 py-3 text-sm font-semibold text-background transition-transform hover:scale-[1.02]">
-        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8ZM9.6 15.5V8.5L15.8 12Z"/></svg>
+      <a href="https://www.youtube.com/@%EC%BC%80%EC%9D%B4%EC%8B%9Ckacy" target="_blank" rel="noopener" class="btn-border-glow inline-flex items-center gap-2 rounded-full border-2 border-neon-purple/50 bg-surface/70 px-5 py-3 text-sm font-semibold text-foreground backdrop-blur transition-transform hover:scale-[1.02]">
+        <svg class="h-4 w-4 text-neon-pink" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8ZM9.6 15.5V8.5L15.8 12Z"/></svg>
         유튜브 라이브 보기
       </a>
       <a href="https://www.instagram.com/kacy_poker/" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-5 py-3 text-sm font-semibold text-background transition-transform hover:scale-[1.02]">
