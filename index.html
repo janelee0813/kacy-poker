@@ -112,6 +112,7 @@
       <button onclick="showPage('kacy')" id="btn-kacy" class="shrink-0 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-3.5 py-1.5 text-[12.5px] font-semibold text-background transition-all">케이시포커</button>
       <button onclick="showPage('schedule')" id="btn-schedule" class="shrink-0 rounded-full border border-border px-3.5 py-1.5 text-[12.5px] font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple">스케줄</button>
       <button onclick="showPage('notice')" id="btn-notice" class="shrink-0 rounded-full border border-border px-3.5 py-1.5 text-[12.5px] font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple">공지</button>
+      <button onclick="showPage('beta')" id="btn-beta" class="shrink-0 rounded-full border border-border px-3.5 py-1.5 text-[12.5px] font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple">beta</button>
       <button onclick="showPage('admin')" id="btn-admin" class="shrink-0 rounded-full border border-border px-3.5 py-1.5 text-[12.5px] font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple">관리자</button>
     </div>
     <div id="visitor-badge" class="flex shrink-0 items-center gap-1 rounded-full border border-neon-purple/20 bg-surface/80 px-2.5 py-1">
@@ -244,6 +245,25 @@
   </section>
 </div>
 
+<!-- beta 페이지 -->
+<div id="page-beta" class="hidden">
+  <section class="px-5 pt-10 pb-16 sm:pt-14 sm:pb-20">
+    <div class="mx-auto max-w-screen-sm">
+      <div class="mb-6 flex items-center gap-2 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-[12.5px] font-semibold text-warning">
+        <span>🧪</span>
+        <span>이곳은 새로운 기능을 테스트하는 페이지예요. 언제든 내용이 바뀌거나 사라질 수 있어요.</span>
+      </div>
+      <div class="mb-6">
+        <h2 class="text-2xl font-extrabold">beta</h2>
+        <p class="mt-1.5 text-xs text-muted-foreground">테스트 중인 기능이 여기에 먼저 올라와요</p>
+      </div>
+      <div class="neon-card p-6 text-center animate-fade-up">
+        <p class="text-sm leading-relaxed text-muted-foreground">아직 테스트 중인 기능이 없어요.<br/>곧 새로운 걸 올려볼게요!</p>
+      </div>
+    </div>
+  </section>
+</div>
+
 <!-- 관리자 페이지 -->
 <div id="page-admin" class="hidden">
   <section class="px-5 pt-10 pb-16 sm:pt-14 sm:pb-20">
@@ -339,7 +359,7 @@
   // ===== 네비게이션 =====
   const NAV_ACTIVE = 'shrink-0 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-3.5 py-1.5 text-[12.5px] font-semibold text-background transition-all';
   const NAV_INACTIVE = 'shrink-0 rounded-full border border-border px-3.5 py-1.5 text-[12.5px] font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple';
-  const PAGES = ['kacy', 'notice', 'schedule', 'admin'];
+  const PAGES = ['kacy', 'notice', 'schedule', 'beta', 'admin'];
 
   window.showPage = function(name){
     PAGES.forEach(function(p){
