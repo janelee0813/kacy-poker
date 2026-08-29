@@ -263,6 +263,7 @@
           </div>
           <div id="admin-entries" class="flex flex-col gap-2"></div>
           <button onclick="adminAddRow()" class="mt-2 w-full rounded-lg border border-dashed border-border py-2 text-xs font-semibold text-muted-foreground">+ 인원 추가</button>
+          <div id="admin-quick-names" class="mt-3 flex flex-wrap gap-1.5"></div>
           <button onclick="adminSubmitPoints()" class="mt-4 w-full rounded-lg bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue py-2.5 text-sm font-bold text-background">적립하기</button>
           <p id="admin-submit-msg" class="mt-2 text-xs"></p>
         </div>
@@ -542,16 +543,53 @@
   };
 
   // ===== 관리자 =====
-  window.adminAddRow = function(){
+  window.adminAddRow = function(prefillName){
     const wrap = document.getElementById('admin-entries');
     const row = document.createElement('div');
     row.className = 'flex gap-2';
     row.innerHTML =
-      '<input type="text" placeholder="이름" class="admin-entry-name flex-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-neon-purple" />' +
+      '<input type="text" placeholder="이름" value="' + escapeHtml(prefillName || '') + '" class="admin-entry-name flex-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-neon-purple" />' +
       '<input type="number" placeholder="점수" value="1" min="1" class="admin-entry-delta w-16 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-neon-purple" />' +
       '<button type="button" onclick="this.parentElement.remove()" class="shrink-0 rounded-lg border border-border px-3 text-xs text-muted-foreground">삭제</button>';
     wrap.appendChild(row);
+    if (prefillName) row.querySelector('.admin-entry-delta').focus();
+    return row;
   };
+
+  window.adminPickQuickName = function(name){
+    // 비어있는 이름 입력칸이 있으면 그걸 채우고, 없으면 새 줄을 추가한다
+    const rows = Array.from(document.querySelectorAll('#admin-entries > div'));
+    const emptyRow = rows.find(function(r){ return !r.querySelector('.admin-entry-name').value.trim(); });
+    if (emptyRow) {
+      emptyRow.querySelector('.admin-entry-name').value = name;
+      emptyRow.querySelector('.admin-entry-delta').focus();
+    } else {
+      window.adminAddRow(name);
+    }
+  };
+
+  async function loadQuickNames(){
+    const el = document.getElementById('admin-quick-names');
+    if (!el) return;
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/points_log?select=name,created_at&order=created_at.desc&limit=100', { headers: sbHeaders() });
+      const rows = await res.json();
+      const seen = new Set();
+      const names = [];
+      rows.forEach(function(r){
+        if (!seen.has(r.name)) { seen.add(r.name); names.push(r.name); }
+      });
+      const recentNames = names.slice(0, 24);
+      el.innerHTML = recentNames.length
+        ? recentNames.map(function(n){
+            const safeAttr = n.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            return `<button type="button" onclick="adminPickQuickName('${safeAttr}')" class="rounded-full border border-border px-2.5 py-1 text-[11.5px] font-medium text-muted-foreground transition-colors hover:border-neon-purple/50 hover:text-neon-purple">${escapeHtml(n)}</button>`;
+          }).join('')
+        : '';
+    } catch (e) {
+      el.innerHTML = '';
+    }
+  }
 
   window.adminLogin = function(){
     const input = document.getElementById('admin-pw-input');
@@ -564,6 +602,7 @@
       const dateInput = document.getElementById('admin-date');
       if (!dateInput.value) dateInput.value = new Date().toISOString().slice(0, 10);
       if (!document.getElementById('admin-entries').children.length) window.adminAddRow();
+      loadQuickNames();
       loadAdminComments();
       errorEl.classList.add('hidden');
     } else {
@@ -598,6 +637,7 @@
       window.adminAddRow();
       document.getElementById('admin-venue').value = '';
       loadPointsData();
+      loadQuickNames();
     } catch (e) {
       msgEl.textContent = '적립에 실패했어요. 다시 시도해주세요.'; msgEl.className = 'mt-2 text-xs text-destructive';
     }
