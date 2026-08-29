@@ -82,6 +82,11 @@
     background-size: 200% auto;
     animation: shimmer 3s linear infinite;
   }
+  @keyframes glowPulseStrong{
+    0%,100%{ box-shadow: 0 0 20px 0px rgba(255,95,176,0.55), 0 0 40px 6px rgba(181,102,255,0.35); }
+    50%{ box-shadow: 0 0 38px 10px rgba(255,95,176,1), 0 0 75px 18px rgba(181,102,255,0.8); }
+  }
+  .btn-glow-strong{ animation: glowPulseStrong 1.4s ease-in-out infinite; }
   .grid-bg{
     background-image:
       radial-gradient(circle at 20% 0%, rgba(181,102,255,0.18), transparent 45%),
@@ -139,7 +144,7 @@
   <div class="mx-auto max-w-screen-sm px-5 pt-6 pb-14 sm:pt-8 sm:pb-20">
 
     <div class="mb-5 text-right animate-fade-up">
-      <a href="https://open.kakao.com/o/gW9SHGLg" target="_blank" rel="noopener" class="btn-shimmer animate-glow-pulse inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-4 py-2 text-xs font-semibold text-background transition-transform hover:scale-[1.03]">
+      <a href="https://open.kakao.com/o/gW9SHGLg" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-4 py-2 text-xs font-semibold text-background shadow-[0_6px_20px_-6px_rgba(181,102,255,0.7)] transition-transform hover:scale-[1.03]">
         소통방 바로가기
       </a>
     </div>
@@ -160,7 +165,7 @@
       케이시 포커에 많은 관심과 응원 부탁드립니다❣️
     </p>
 
-    <a href="https://www.youtube.com/@%EC%BC%80%EC%9D%B4%EC%8B%9Ckacy" target="_blank" rel="noopener" class="mt-7 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-5 py-3 text-sm font-semibold text-background shadow-[0_10px_40px_-10px_rgba(181,102,255,0.7)] transition-transform hover:scale-[1.02] animate-fade-up" style="animation-delay:200ms">
+    <a href="https://www.youtube.com/@%EC%BC%80%EC%9D%B4%EC%8B%9Ckacy" target="_blank" rel="noopener" class="btn-shimmer btn-glow-strong mt-7 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-5 py-3 text-sm font-semibold text-background transition-transform hover:scale-[1.02] animate-fade-up" style="animation-delay:200ms">
       <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8ZM9.6 15.5V8.5L15.8 12Z"/></svg>
       유튜브 라이브 보기
     </a>
