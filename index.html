@@ -326,6 +326,31 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // ===== 스크롤 진입 시 한 번만 애니메이션을 트리거하는 헬퍼 =====
+  function revealOnScroll(container, applyFn){
+    if (!container) return;
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          applyFn();
+          obs.unobserve(container);
+        }
+      });
+    }, { threshold: 0.2, rootMargin: '0px 0px -30px 0px' });
+    obs.observe(container);
+  }
+  function animateCount(el, target){
+    const duration = 900;
+    const start = performance.now();
+    function step(now){
+      const progress = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = Math.round(eased * target) + '점';
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
   // ===== 최근 적립 / 랭킹 (Supabase 연동) =====
   function renderRecent(data){
     const el = document.getElementById('recent-list');
@@ -337,7 +362,7 @@
     el.innerHTML = data.map((d, i) => {
       const sub = [formatMD(d.earned_date), d.venue].filter(Boolean).join(' · ');
       return `
-      <div class="flex items-center gap-3">
+      <div class="recent-row flex items-center gap-3" style="opacity:0;transform:translateX(-14px);transition:opacity .6s cubic-bezier(.22,1,.36,1) ${i * 90}ms, transform .6s cubic-bezier(.22,1,.36,1) ${i * 90}ms">
         <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-neon-purple to-neon-pink text-[10px] font-bold text-background">${i + 1}</span>
         <div class="min-w-0 flex-1">
           <div class="truncate text-sm text-foreground/90">${escapeHtml(d.name)}</div>
@@ -346,6 +371,12 @@
         <span class="shrink-0 text-sm font-bold text-success">+${d.delta}</span>
       </div>`;
     }).join('');
+    revealOnScroll(el, function(){
+      el.querySelectorAll('.recent-row').forEach(row => {
+        row.style.opacity = '1';
+        row.style.transform = 'translateX(0)';
+      });
+    });
   }
 
   function renderRank(data){
@@ -367,13 +398,17 @@
             <span class="w-5 shrink-0 text-center text-xs text-muted-foreground">${rankLabel}</span>
             <span class="truncate">${escapeHtml(d.name)}</span>
           </span>
-          <span class="shrink-0 text-xs font-bold text-neon-purple">${d.score}점</span>
+          <span class="rank-score shrink-0 text-xs font-bold text-neon-purple" data-score="${d.score}">0점</span>
         </div>
         <div class="h-2.5 rounded-full bg-white/5 overflow-hidden">
-          <div class="h-full rounded-full bg-gradient-to-r from-neon-purple to-neon-pink shadow-[0_0_8px_rgba(181,102,255,0.4)]" style="width:${pct}%"></div>
+          <div class="rank-bar h-full rounded-full bg-gradient-to-r from-neon-purple to-neon-pink shadow-[0_0_8px_rgba(181,102,255,0.4)]" data-pct="${pct}" style="width:0%;transition:width .9s cubic-bezier(.22,1,.36,1) ${i * 55}ms"></div>
         </div>
       </div>`;
     }).join('');
+    revealOnScroll(el, function(){
+      el.querySelectorAll('.rank-bar').forEach(bar => { bar.style.width = bar.dataset.pct + '%'; });
+      el.querySelectorAll('.rank-score').forEach(scoreEl => animateCount(scoreEl, parseInt(scoreEl.dataset.score, 10)));
+    });
   }
 
   async function loadPointsData(){
@@ -448,10 +483,12 @@
         const dayName = DAY_NAMES[new Date(SCHEDULE_YEAR, SCHEDULE_MONTH, it.day).getDay()];
         const accent = ACCENTS[itemIndex % ACCENTS.length];
         itemIndex++;
+        const mapUrl = 'https://map.naver.com/p/search/' + encodeURIComponent(it.venue);
         return `
         <div class="flex items-center gap-3">
           <span class="shrink-0 rounded-lg border ${accent.border} ${accent.bg} px-2.5 py-1.5 text-center text-[12px] font-bold ${accent.text}">9/${it.day}<span class="ml-1 font-normal text-muted-foreground">(${dayName})</span></span>
-          <span class="text-[13.5px] text-foreground/85">${it.venue}</span>
+          <span class="min-w-0 flex-1 truncate text-[13.5px] text-foreground/85">${it.venue}</span>
+          <a href="${mapUrl}" target="_blank" rel="noopener" class="shrink-0 rounded-full border border-border px-2.5 py-1 text-[11px] font-semibold text-muted-foreground transition-colors hover:border-neon-purple/50 hover:text-neon-purple">📍 위치</a>
         </div>`;
       }).join('<div class="my-2 h-px bg-white/5"></div>');
       return `<div class="${spacing} flex flex-col gap-2.5">${rows}</div>`;
