@@ -96,6 +96,11 @@
   .no-scrollbar{ -ms-overflow-style:none; scrollbar-width:none; }
   @keyframes onlinePulse{0%,100%{opacity:1;box-shadow:0 0 6px #5ee0a8}50%{opacity:0.35;box-shadow:0 0 2px #5ee0a8}}
   .live-dot{ animation: onlinePulse 1.4s ease-in-out infinite; }
+  @keyframes charFloat{
+    0%,100%{ transform: translateY(0) rotate(-1.5deg); }
+    50%{ transform: translateY(-10px) rotate(1.5deg); }
+  }
+  .char-float{ animation: charFloat 4s ease-in-out infinite; }
 </style>
 </head>
 <body class="min-h-screen bg-background text-foreground font-sans">
@@ -257,8 +262,15 @@
         <h2 class="text-2xl font-extrabold">beta</h2>
         <p class="mt-1.5 text-xs text-muted-foreground">테스트 중인 기능이 여기에 먼저 올라와요</p>
       </div>
-      <div class="neon-card p-6 text-center animate-fade-up">
-        <p class="text-sm leading-relaxed text-muted-foreground">아직 테스트 중인 기능이 없어요.<br/>곧 새로운 걸 올려볼게요!</p>
+      <div class="neon-card p-6 text-center">
+        <p class="mb-5 text-[11px] font-semibold uppercase tracking-[0.2em] text-neon-purple">캐릭터 테스트</p>
+        <div class="relative mx-auto h-40 w-40">
+          <div class="char-float mx-auto h-40 w-40 overflow-hidden rounded-full border-2 border-neon-purple/50 shadow-[0_0_30px_-5px_rgba(181,102,255,0.6)]">
+            <img src="assets/kacy-character.png" alt="케이시" class="h-full w-full object-cover" />
+          </div>
+        </div>
+        <p class="mt-5 text-sm font-bold text-foreground/90">케이시</p>
+        <p class="mt-1 text-xs text-muted-foreground">동동 떠다니는 캐릭터, 어때요?</p>
       </div>
     </div>
   </section>
