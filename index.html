@@ -112,18 +112,18 @@
 
 <!-- Navigation -->
 <nav class="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-sm">
-  <div class="mx-auto max-w-screen-sm px-5 pt-2 pb-2.5">
-    <div class="mb-2 flex justify-end">
-      <div id="visitor-badge" class="flex shrink-0 items-center gap-1 rounded-full border border-neon-purple/20 bg-surface/80 px-2.5 py-1">
+  <div class="mx-auto max-w-screen-sm px-5 py-2.5">
+    <div class="flex items-center justify-between gap-2">
+      <div class="flex flex-1 gap-1.5">
+        <button onclick="showPage('kacy')" id="btn-kacy" class="rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-2 py-1.5 text-[12px] font-semibold text-background transition-all">케이시포커</button>
+        <button onclick="showPage('schedule')" id="btn-schedule" class="rounded-full border border-border px-2 py-1.5 text-[12px] font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple">스케줄</button>
+        <button onclick="showPage('notice')" id="btn-notice" class="rounded-full border border-border px-2 py-1.5 text-[12px] font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple">공지</button>
+        <button onclick="showPage('beta')" id="btn-beta" class="rounded-full border border-border px-2 py-1.5 text-[12px] font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple">beta</button>
+      </div>
+      <div id="visitor-badge" class="flex shrink-0 items-center gap-1 rounded-full border border-neon-purple/20 bg-surface/80 px-2 py-1">
         <span class="text-[9px] text-muted-foreground">Total View</span>
         <span id="visit-count" class="text-[9px] font-bold text-neon-purple">—</span>
       </div>
-    </div>
-    <div class="grid grid-cols-4 gap-1.5">
-      <button onclick="showPage('kacy')" id="btn-kacy" class="rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-2 py-1.5 text-[12px] font-semibold text-background transition-all">케이시포커</button>
-      <button onclick="showPage('schedule')" id="btn-schedule" class="rounded-full border border-border px-2 py-1.5 text-[12px] font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple">스케줄</button>
-      <button onclick="showPage('notice')" id="btn-notice" class="rounded-full border border-border px-2 py-1.5 text-[12px] font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple">공지</button>
-      <button onclick="showPage('beta')" id="btn-beta" class="rounded-full border border-border px-2 py-1.5 text-[12px] font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple">beta</button>
     </div>
     <div class="mt-1.5">
       <button onclick="showPage('admin')" id="btn-admin" class="rounded-full border border-border px-2 py-1.5 text-[12px] font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple">관리자</button>
