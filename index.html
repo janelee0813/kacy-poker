@@ -229,9 +229,15 @@
 <div id="page-schedule" class="hidden">
   <section class="px-5 pt-10 pb-16 sm:pt-14 sm:pb-20">
     <div class="mx-auto max-w-screen-sm">
-      <div class="mb-6">
-        <h2 class="text-2xl font-extrabold">🗓️ 9월 일정</h2>
-        <p class="mt-1.5 text-xs text-muted-foreground">케이시 포커의 이번 달 방문 일정이에요</p>
+      <div class="mb-6 flex items-center justify-between gap-2">
+        <div>
+          <h2 id="schedule-title" class="text-2xl font-extrabold">🗓️ 8월 일정</h2>
+          <p class="mt-1.5 text-xs text-muted-foreground">케이시 포커의 방문 일정이에요</p>
+        </div>
+        <div class="flex shrink-0 gap-1.5">
+          <button id="schedule-prev-btn" onclick="scheduleGoto(-1)" class="rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-neon-purple/50 hover:text-neon-purple disabled:opacity-30 disabled:pointer-events-none">◀</button>
+          <button id="schedule-next-btn" onclick="scheduleGoto(1)" class="rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-neon-purple/50 hover:text-neon-purple disabled:opacity-30 disabled:pointer-events-none">다음달 ▶</button>
+        </div>
       </div>
       <div id="schedule-list" class="neon-card p-4 sm:p-5"></div>
     </div>
@@ -436,53 +442,88 @@
   }
 
   // ===== 스케줄 =====
-  const scheduleGroups = [
-    { items: [
-      { day: 2, venue: '구로 러너펍' },
-      { day: 3, venue: '영등포 케이스타 펍' },
-      { day: 4, venue: '영등포 케이스타 펍' },
-      { day: 5, venue: '구리 러너펍' },
-    ]},
-    { items: [
-      { day: 7, venue: '광주 용봉점 치즈홀덤펍' },
-      { day: 9, venue: '언주 제이블러프' },
-      { day: 10, venue: '논현 러너펍' },
-      { day: 11, venue: '신촌 러너펍' },
-      { day: 12, venue: '구리 러너펍' },
-    ]},
-    { items: [
-      { day: 13, venue: '영등포 러너펍' },
-      { day: 14, venue: '구리 러너펍' },
-      { day: 15, venue: '역삼 러너펍' },
-      { day: 17, venue: '인계 러너펍' },
-    ]},
-    { banner: { emoji: '🏖️', text: '9/18~20 휴가' } },
-    { items: [
-      { day: 21, venue: '구리 러너펍' },
-      { day: 22, venue: '논현 러너펍' },
-      { day: 23, venue: '목동 KMGM' },
-    ]},
-    { banner: { emoji: '🌕', text: '9/24~25 해피추석 🧡' } },
-    { items: [
-      { day: 26, venue: '구로 러너펍' },
-      { day: 28, venue: '광주 스타디움' },
-      { day: 29, venue: '안양 KMGM' },
-      { day: 30, venue: '구로 러너펍' },
-    ]},
-  ];
+  const SCHEDULE_YEAR = 2026;
   const DAY_NAMES = ['일','월','화','수','목','금','토'];
-  const SCHEDULE_YEAR = 2026, SCHEDULE_MONTH = 8; // 9월 (0-indexed)
+  const SCHEDULE_DATA = {
+    7: { // 8월 (0-indexed)
+      groups: [
+        { items: [
+          { day: 28, venue: '언주 제이블러프' },
+          { day: 29, venue: '별내 러너펍' },
+          { day: 30, venue: '구로 러너펍' },
+          { day: 31, venue: '구리 러너펍' },
+        ]},
+      ]
+    },
+    8: { // 9월 (0-indexed)
+      groups: [
+        { items: [
+          { day: 2, venue: '구로 러너펍' },
+          { day: 3, venue: '영등포 케이스타 펍' },
+          { day: 4, venue: '영등포 케이스타 펍' },
+          { day: 5, venue: '구리 러너펍' },
+        ]},
+        { items: [
+          { day: 7, venue: '광주 용봉점 치즈홀덤펍' },
+          { day: 9, venue: '언주 제이블러프' },
+          { day: 10, venue: '논현 러너펍' },
+          { day: 11, venue: '신촌 러너펍' },
+          { day: 12, venue: '구리 러너펍' },
+        ]},
+        { items: [
+          { day: 13, venue: '영등포 러너펍' },
+          { day: 14, venue: '구리 러너펍' },
+          { day: 15, venue: '역삼 러너펍' },
+          { day: 17, venue: '인계 러너펍' },
+        ]},
+        { banner: { emoji: '🏖️', text: '9/18~20 휴가' } },
+        { items: [
+          { day: 21, venue: '구리 러너펍' },
+          { day: 22, venue: '논현 러너펍' },
+          { day: 23, venue: '목동 KMGM' },
+        ]},
+        { banner: { emoji: '🌕', text: '9/24~25 해피추석 🧡' } },
+        { items: [
+          { day: 26, venue: '구로 러너펍' },
+          { day: 28, venue: '광주 스타디움' },
+          { day: 29, venue: '안양 KMGM' },
+          { day: 30, venue: '구로 러너펍' },
+        ]},
+      ]
+    },
+  };
+  const SCHEDULE_MONTH_KEYS = Object.keys(SCHEDULE_DATA).map(Number).sort(function(a, b){ return a - b; });
+  let scheduleMonthIndex = 0; // SCHEDULE_MONTH_KEYS 안에서의 현재 위치 (기본: 8월)
+
+  // 같은 브랜드(프렌차이즈)는 같은 색으로 묶어서 표시
+  const VENUE_BRANDS = ['러너펍', '제이블러프', 'KMGM', '케이스타', '치즈홀덤펍', '스타디움'];
   const ACCENTS = [
     { bg: 'bg-neon-purple/12', border: 'border-neon-purple/40', text: 'text-neon-purple' },
     { bg: 'bg-neon-pink/12', border: 'border-neon-pink/40', text: 'text-neon-pink' },
     { bg: 'bg-neon-blue/12', border: 'border-neon-blue/40', text: 'text-neon-blue' },
   ];
+  const brandColorMap = {};
+  function accentForVenue(venue){
+    const brand = VENUE_BRANDS.find(function(b){ return venue.indexOf(b) !== -1; }) || venue;
+    if (!(brand in brandColorMap)) {
+      brandColorMap[brand] = ACCENTS[Object.keys(brandColorMap).length % ACCENTS.length];
+    }
+    return brandColorMap[brand];
+  }
 
-  function renderSchedule(groups){
+  function renderSchedule(){
+    const monthKey = SCHEDULE_MONTH_KEYS[scheduleMonthIndex];
+    const data = SCHEDULE_DATA[monthKey];
     const el = document.getElementById('schedule-list');
-    if (!el) return;
-    let itemIndex = 0;
-    el.innerHTML = groups.map(function(g, gi){
+    if (!el || !data) return;
+
+    document.getElementById('schedule-title').textContent = '🗓️ ' + (monthKey + 1) + '월 일정';
+    document.getElementById('schedule-prev-btn').disabled = scheduleMonthIndex <= 0;
+    const nextBtn = document.getElementById('schedule-next-btn');
+    nextBtn.disabled = scheduleMonthIndex >= SCHEDULE_MONTH_KEYS.length - 1;
+    nextBtn.textContent = scheduleMonthIndex >= SCHEDULE_MONTH_KEYS.length - 1 ? '다음달 ▶' : (SCHEDULE_MONTH_KEYS[scheduleMonthIndex + 1] + 1) + '월 ▶';
+
+    el.innerHTML = data.groups.map(function(g, gi){
       const spacing = gi > 0 ? 'mt-4' : '';
       if (g.banner) {
         return `
@@ -491,13 +532,12 @@
         </div>`;
       }
       const rows = g.items.map(function(it){
-        const dayName = DAY_NAMES[new Date(SCHEDULE_YEAR, SCHEDULE_MONTH, it.day).getDay()];
-        const accent = ACCENTS[itemIndex % ACCENTS.length];
-        itemIndex++;
+        const dayName = DAY_NAMES[new Date(SCHEDULE_YEAR, monthKey, it.day).getDay()];
+        const accent = accentForVenue(it.venue);
         const mapUrl = 'https://map.naver.com/p/search/' + encodeURIComponent(it.venue);
         return `
         <div class="flex items-center gap-3">
-          <span class="shrink-0 rounded-lg border ${accent.border} ${accent.bg} px-2.5 py-1.5 text-center text-[12px] font-bold ${accent.text}">9/${it.day}<span class="ml-1 font-normal text-muted-foreground">(${dayName})</span></span>
+          <span class="shrink-0 rounded-lg border ${accent.border} ${accent.bg} px-2.5 py-1.5 text-center text-[12px] font-bold ${accent.text}">${monthKey + 1}/${it.day}<span class="ml-1 font-normal text-muted-foreground">(${dayName})</span></span>
           <span class="min-w-0 flex-1 truncate text-[13.5px] text-foreground/85">${it.venue}</span>
           <a href="${mapUrl}" target="_blank" rel="noopener" class="shrink-0 rounded-full border border-border px-2.5 py-1 text-[11px] font-semibold text-muted-foreground transition-colors hover:border-neon-purple/50 hover:text-neon-purple">📍 위치</a>
         </div>`;
@@ -505,6 +545,13 @@
       return `<div class="${spacing} flex flex-col gap-2.5">${rows}</div>`;
     }).join('');
   }
+
+  window.scheduleGoto = function(dir){
+    const next = scheduleMonthIndex + dir;
+    if (next < 0 || next >= SCHEDULE_MONTH_KEYS.length) return;
+    scheduleMonthIndex = next;
+    renderSchedule();
+  };
 
   // ===== 공지 게시판 =====
   async function loadNotices(){
@@ -805,7 +852,7 @@
 
   // ===== 초기 로드 =====
   loadPointsData();
-  renderSchedule(scheduleGroups);
+  renderSchedule();
   loadNotices();
   loadVisitorCount();
 
