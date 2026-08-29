@@ -194,12 +194,10 @@
   <section class="px-5 pt-10 pb-16 sm:pt-14 sm:pb-20">
     <div class="mx-auto max-w-screen-sm">
       <div class="mb-6">
-        <h2 class="text-2xl font-extrabold">🗓️ 스케줄</h2>
-        <p class="mt-1.5 text-xs text-muted-foreground">토너먼트·방송 일정을 확인하세요</p>
+        <h2 class="text-2xl font-extrabold">🗓️ 9월 일정</h2>
+        <p class="mt-1.5 text-xs text-muted-foreground">케이시 포커의 이번 달 방문 일정이에요</p>
       </div>
-      <div class="neon-card p-6 text-center animate-fade-up">
-        <p class="text-sm leading-relaxed text-muted-foreground">아직 등록된 스케줄이 없어요.<br/>일정이 확정되면 이곳에 올려드릴게요!</p>
-      </div>
+      <div id="schedule-list" class="neon-card p-4 sm:p-5"></div>
     </div>
   </section>
 </div>
@@ -260,6 +258,66 @@
     { name: '초렘', score: 1 },
   ];
 
+  const scheduleGroups = [
+    { items: [
+      { day: 2, venue: '구로 러너펍' },
+      { day: 3, venue: '영등포 케이스타 펍' },
+      { day: 4, venue: '영등포 케이스타 펍' },
+      { day: 5, venue: '구리 러너펍' },
+    ]},
+    { items: [
+      { day: 7, venue: '광주 용봉점 치즈홀덤펍' },
+      { day: 9, venue: '언주 제이블러프' },
+      { day: 10, venue: '논현 러너펍' },
+      { day: 11, venue: '신촌 러너펍' },
+      { day: 12, venue: '구리 러너펍' },
+    ]},
+    { items: [
+      { day: 13, venue: '영등포 러너펍' },
+      { day: 14, venue: '구리 러너펍' },
+      { day: 15, venue: '역삼 러너펍' },
+      { day: 17, venue: '인계 러너펍' },
+    ]},
+    { banner: { emoji: '🏖️', text: '9/18~20 휴가' } },
+    { items: [
+      { day: 21, venue: '구리 러너펍' },
+      { day: 22, venue: '논현 러너펍' },
+      { day: 23, venue: '목동 KMGM' },
+    ]},
+    { banner: { emoji: '🌕', text: '9/24~25 해피추석 🧡' } },
+    { items: [
+      { day: 26, venue: '구로 러너펍' },
+      { day: 28, venue: '광주 스타디움' },
+      { day: 29, venue: '안양 KMGM' },
+      { day: 30, venue: '구로 러너펍' },
+    ]},
+  ];
+  const DAY_NAMES = ['일','월','화','수','목','금','토'];
+  const SCHEDULE_YEAR = 2026, SCHEDULE_MONTH = 8; // 9월 (0-indexed)
+
+  function renderSchedule(groups){
+    const el = document.getElementById('schedule-list');
+    if (!el) return;
+    el.innerHTML = groups.map(function(g, gi){
+      const spacing = gi > 0 ? 'mt-4' : '';
+      if (g.banner) {
+        return `
+        <div class="${spacing} flex items-center justify-center gap-2 rounded-xl border border-warning/30 bg-warning/10 py-3 text-[13px] font-bold text-warning">
+          <span>${g.banner.emoji}</span><span>${g.banner.text}</span>
+        </div>`;
+      }
+      const rows = g.items.map(function(it){
+        const dayName = DAY_NAMES[new Date(SCHEDULE_YEAR, SCHEDULE_MONTH, it.day).getDay()];
+        return `
+        <div class="flex items-center gap-3">
+          <span class="shrink-0 rounded-lg border border-border bg-surface-elevated px-2.5 py-1.5 text-center text-[12px] font-bold text-foreground/90">9/${it.day}<span class="ml-1 font-normal text-muted-foreground">(${dayName})</span></span>
+          <span class="text-[13.5px] text-foreground/85">${it.venue}</span>
+        </div>`;
+      }).join('<div class="my-2 h-px bg-white/5"></div>');
+      return `<div class="${spacing} flex flex-col gap-2.5">${rows}</div>`;
+    }).join('');
+  }
+
   function renderRecent(data){
     const el = document.getElementById('recent-list');
     if (!el) return;
@@ -298,6 +356,7 @@
 
   renderRecent(recentData);
   renderRank(rankData);
+  renderSchedule(scheduleGroups);
 
   // 스크롤 진행바
   const bar = document.getElementById('scrollbar');
