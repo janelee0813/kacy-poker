@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%25' stop-color='%23b566ff'/><stop offset='50%25' stop-color='%23ff5fb0'/><stop offset='100%25' stop-color='%235ec8ff'/></linearGradient></defs><rect width='32' height='32' rx='7' ry='7' fill='url(%23g)'/></svg>"/>
+<title>KACY POKER</title>
+<meta name="description" content="국내외 포커 토너먼트와 홀덤펍에서의 다양한 순간을 브이로그, 라이브 방송, 쇼츠로 함께 나눕니다." />
+<meta property="og:title" content="케이시 KACY POKER"/>
+<meta property="og:description" content="국내외 포커 토너먼트와 홀덤펍에서의 다양한 순간을 브이로그, 라이브 방송, 쇼츠로 함께 나눕니다."/>
+<meta property="og:type" content="website"/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Pretendard Variable','Pretendard','-apple-system','BlinkMacSystemFont','Apple SD Gothic Neo','Segoe UI','Roboto','sans-serif']
+        },
+        colors: {
+          background: '#0a0612',
+          surface: '#15101f',
+          'surface-elevated': '#1c1530',
+          foreground: '#f5f1ff',
+          muted: '#1a1428',
+          'muted-foreground': '#9b94b3',
+          border: 'rgba(140,110,200,0.22)',
+          'neon-purple': '#b566ff',
+          'neon-pink': '#ff5fb0',
+          'neon-blue': '#5ec8ff',
+          warning: '#ffb547',
+          success: '#5ee0a8',
+          destructive: '#ff5f6d',
+        },
+        boxShadow: {
+          'glow-purple': '0 0 30px -5px #b566ff',
+          'glow-pink': '0 0 30px -5px #ff5fb0',
+          'glow-blue': '0 0 30px -5px #5ec8ff',
+        },
+        animation: {
+          'fade-up': 'fade-up 0.7s cubic-bezier(0.22,1,0.36,1) both',
+          'glow-pulse': 'glow-pulse 3s ease-in-out infinite',
+          'shimmer': 'shimmer 6s linear infinite',
+        },
+        keyframes: {
+          'fade-up': { '0%': { opacity: 0, transform: 'translateY(24px)' }, '100%': { opacity: 1, transform: 'translateY(0)' } },
+          'glow-pulse': { '0%,100%': { boxShadow: '0 0 20px -8px rgba(181,102,255,0.5)' }, '50%': { boxShadow: '0 0 35px -4px rgba(181,102,255,0.85)' } },
+          'shimmer': { '0%': { backgroundPosition: '0% 50%' }, '100%': { backgroundPosition: '200% 50%' } },
+        }
+      }
+    }
+  }
+</script>
+<style>
+  html { scroll-behavior: smooth; background:#0a0612; color-scheme: dark; }
+  body { background:#0a0612; color:#f5f1ff; font-family:'Pretendard Variable','Pretendard',-apple-system,sans-serif; -webkit-font-smoothing:antialiased; }
+  ::selection { background: rgba(181,102,255,0.35); }
+
+  .text-gradient-neon{
+    background: linear-gradient(100deg,#b566ff 0%,#ff5fb0 50%,#5ec8ff 100%);
+    background-size:200% auto;
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    animation: shimmer 6s linear infinite;
+  }
+  .neon-card{
+    position:relative;
+    background: linear-gradient(180deg, rgba(28,21,48,0.85), rgba(21,16,31,0.7));
+    border:1px solid rgba(140,110,200,0.28);
+    backdrop-filter: blur(8px);
+    border-radius: 1rem;
+  }
+  .grid-bg{
+    background-image:
+      radial-gradient(circle at 20% 0%, rgba(181,102,255,0.18), transparent 45%),
+      radial-gradient(circle at 80% 10%, rgba(255,95,176,0.14), transparent 50%),
+      radial-gradient(circle at 50% 100%, rgba(94,200,255,0.12), transparent 55%);
+  }
+  .divider-neon{
+    height:1px;
+    background: linear-gradient(90deg, transparent, rgba(181,102,255,0.6), rgba(255,95,176,0.5), transparent);
+  }
+</style>
+</head>
+<body class="min-h-screen bg-background text-foreground font-sans">
+
+<!-- Scroll progress -->
+<div class="fixed inset-x-0 top-0 z-50 h-[2px]">
+  <div id="scrollbar" class="h-full w-0 bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue shadow-[0_0_10px_#b566ff] transition-[width] duration-150"></div>
+</div>
+
+<!-- Hero -->
+<section class="relative overflow-hidden">
+  <div class="grid-bg absolute inset-0 -z-10"></div>
+  <div class="absolute inset-x-0 top-0 -z-10 h-px bg-gradient-to-r from-transparent via-neon-purple/60 to-transparent"></div>
+  <div class="mx-auto max-w-screen-sm px-5 pt-6 pb-14 sm:pt-8 sm:pb-20">
+
+    <div class="mb-5 text-right animate-fade-up">
+      <a href="https://open.kakao.com/o/gW9SHGLg" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-4 py-2 text-xs font-semibold text-background shadow-[0_6px_20px_-6px_rgba(181,102,255,0.7)] transition-transform hover:scale-[1.03]">
+        소통방 바로가기
+      </a>
+    </div>
+
+    <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-surface/70 px-3.5 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur animate-fade-up">
+      <span class="h-1.5 w-1.5 rounded-full bg-success shadow-[0_0_6px_#5ee0a8]"></span>
+      <span>케이시 POKER VLOG · LIVE</span>
+    </div>
+
+    <h1 class="text-[38px] font-extrabold leading-[1.15] tracking-tight sm:text-5xl animate-fade-up" style="animation-delay:60ms">
+      케이시<br/>
+      <span class="text-gradient-neon">KACY POKER</span>
+    </h1>
+
+    <p class="mt-5 max-w-xl text-[15px] leading-relaxed text-muted-foreground sm:text-base animate-fade-up" style="animation-delay:140ms">
+      국내외 포커 토너먼트와 홀덤펍에서의 다양한 순간을<br/>
+      브이로그, 라이브 방송, 쇼츠로 함께 나누고 있습니다.<br/>
+      케이시 포커에 많은 관심과 응원 부탁드립니다❣️
+    </p>
+  </div>
+  <div class="divider-neon mx-auto max-w-screen-sm"></div>
+</section>
+
+<!-- 최근 적립 포인트 -->
+<section class="px-5 py-14 sm:py-16">
+  <div class="mx-auto max-w-screen-sm">
+    <div class="mb-5">
+      <span class="text-[13px] font-bold uppercase tracking-[0.16em] text-neon-blue">최근 적립 포인트</span>
+      <p class="mt-1 text-xs text-muted-foreground">가장 최근에 적립된 포인트 현황이에요</p>
+    </div>
+    <div id="recent-list" class="neon-card p-4 sm:p-5 flex flex-col divide-y divide-white/5"></div>
+  </div>
+</section>
+
+<!-- 케톡방 랭킹 -->
+<section class="px-5 pb-16 sm:pb-20">
+  <div class="mx-auto max-w-screen-sm">
+    <div class="mb-6 text-center">
+      <h2 class="text-2xl font-extrabold">🏆 8월 케톡방 랭킹 🏆</h2>
+      <p class="mt-1.5 text-xs text-muted-foreground">누적 포인트 기준 순위예요</p>
+    </div>
+    <div id="rank-list" class="neon-card p-5 sm:p-6"></div>
+  </div>
+</section>
+
+<script>
+(function(){
+  const recentData = [
+    { name: '따릉', delta: 1 },
+    { name: '제인', delta: 2 },
+    { name: '백호랭이', delta: 1 },
+    { name: '토탈맨', delta: 1 },
+    { name: '홀덤여행', delta: 2 },
+  ];
+
+  const rankData = [
+    { name: '헤롱이', score: 19 },
+    { name: '제이', score: 19 },
+    { name: '따릉', score: 17 },
+    { name: '킴님', score: 12 },
+    { name: '에르메스', score: 8 },
+    { name: '엠토리', score: 7 },
+    { name: '하퍼', score: 6 },
+    { name: '콜라겐남', score: 6 },
+    { name: '엽로어', score: 6 },
+    { name: '후니', score: 6 },
+    { name: '우트', score: 6 },
+    { name: '제인', score: 5 },
+    { name: '아카수딧', score: 5 },
+    { name: '윤', score: 4 },
+    { name: '에퀴티', score: 4 },
+    { name: '스안', score: 4 },
+    { name: '백호랭이', score: 4 },
+    { name: '퀸', score: 3 },
+    { name: '택시탄고등어', score: 3 },
+    { name: '토탈맨', score: 3 },
+    { name: '아직은 초보', score: 2 },
+    { name: '홀덤여행', score: 2 },
+    { name: '완설', score: 1 },
+    { name: '아론', score: 1 },
+    { name: '영호', score: 1 },
+    { name: '여운잉', score: 1 },
+    { name: '더블더블', score: 1 },
+    { name: '강아지상', score: 1 },
+    { name: '초렘', score: 1 },
+  ];
+
+  function renderRecent(data){
+    const el = document.getElementById('recent-list');
+    if (!el) return;
+    el.innerHTML = data.map(d => `
+      <div class="flex items-center justify-between py-3 first:pt-0 last:pb-0">
+        <span class="text-sm font-semibold text-foreground/90">${d.name}</span>
+        <span class="rounded-full bg-success/15 px-2.5 py-1 text-xs font-bold text-success">+${d.delta}</span>
+      </div>
+    `).join('');
+  }
+
+  function renderRank(data){
+    const el = document.getElementById('rank-list');
+    if (!el) return;
+    const max = Math.max(...data.map(d => d.score));
+    const medals = ['🥇','🥈','🥉'];
+    el.innerHTML = data.map((d, i) => {
+      const pct = Math.max(4, Math.round(d.score / max * 100));
+      const rankLabel = medals[i] || (i + 1);
+      return `
+      <div class="mb-4 last:mb-0">
+        <div class="mb-1.5 flex items-center justify-between gap-2">
+          <span class="flex min-w-0 items-center gap-2 text-[13.5px] font-semibold text-foreground/90">
+            <span class="w-5 shrink-0 text-center text-xs text-muted-foreground">${rankLabel}</span>
+            <span class="truncate">${d.name}</span>
+          </span>
+          <span class="shrink-0 text-xs font-bold text-neon-purple">${d.score}점</span>
+        </div>
+        <div class="h-2.5 rounded-full bg-white/5 overflow-hidden">
+          <div class="h-full rounded-full bg-gradient-to-r from-neon-purple to-neon-pink shadow-[0_0_8px_rgba(181,102,255,0.4)]" style="width:${pct}%"></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  renderRecent(recentData);
+  renderRank(rankData);
+
+  // 스크롤 진행바
+  const bar = document.getElementById('scrollbar');
+  function updateScroll(){
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max > 0 ? (h.scrollTop / max * 100) : 0) + '%';
+  }
+  document.addEventListener('scroll', updateScroll, { passive: true });
+  updateScroll();
+
+  // 섹션 스크롤 리빌
+  function hide(el, ty){
+    el.style.opacity = '0';
+    el.style.transform = `translateY(${ty}px)`;
+    el.style.transition = 'none';
+  }
+  function reveal(el){
+    el.style.transition = 'opacity .75s cubic-bezier(.22,1,.36,1),transform .75s cubic-bezier(.22,1,.36,1)';
+    el.style.opacity = '1';
+    el.style.transform = 'translateY(0)';
+    el.addEventListener('transitionend', () => {
+      el.style.opacity = ''; el.style.transform = ''; el.style.transition = '';
+    }, { once: true });
+  }
+  const revealTargets = document.querySelectorAll('section:not(:first-of-type) > div');
+  revealTargets.forEach(el => hide(el, 32));
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { reveal(e.target); obs.unobserve(e.target); }
+    });
+  }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+  revealTargets.forEach(el => obs.observe(el));
+})();
+</script>
+
+</body>
+</html>
