@@ -12,6 +12,7 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net" />
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
   tailwind.config = {
     theme: {
@@ -256,6 +257,16 @@
       </div>
 
       <div id="admin-panel" class="hidden flex-col gap-5">
+
+        <div class="neon-card p-4 sm:p-5">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <h3 class="text-sm font-bold text-neon-blue">데이터 백업</h3>
+              <p class="mt-1 text-[11px] text-muted-foreground">적립 내역·누적 랭킹을 엑셀로 내려받아요</p>
+            </div>
+            <button onclick="adminDownloadExcel()" id="admin-export-btn" class="shrink-0 rounded-lg bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-3.5 py-2 text-xs font-bold text-background">엑셀 다운로드</button>
+          </div>
+        </div>
 
         <div class="neon-card p-4 sm:p-5">
           <h3 class="mb-4 text-sm font-bold text-neon-purple">포인트 적립</h3>
@@ -629,6 +640,50 @@
       el.innerHTML = '';
     }
   }
+
+  window.adminDownloadExcel = async function(){
+    const btn = document.getElementById('admin-export-btn');
+    const originalText = btn.textContent;
+    btn.textContent = '내려받는 중...';
+    btn.disabled = true;
+    try {
+      const [logRes, rankRes] = await Promise.all([
+        fetch(SUPABASE_URL + '/rest/v1/points_log?select=name,delta,venue,earned_date,created_at&order=created_at.asc', { headers: sbHeaders() }),
+        fetch(SUPABASE_URL + '/rest/v1/points_ranking?select=name,score', { headers: sbHeaders() })
+      ]);
+      const log = await logRes.json();
+      const rank = await rankRes.json();
+
+      const logRows = log.map(function(r){
+        return {
+          이름: r.name,
+          포인트: r.delta,
+          장소: r.venue || '',
+          적립일: r.earned_date || '',
+          등록시각: new Date(r.created_at).toLocaleString('ko-KR')
+        };
+      });
+      const rankRows = rank.map(function(r, i){
+        return { 순위: i + 1, 이름: r.name, 누적점수: r.score };
+      });
+
+      const wb = XLSX.utils.book_new();
+      const ws1 = XLSX.utils.json_to_sheet(logRows);
+      ws1['!cols'] = [{ wch: 14 }, { wch: 8 }, { wch: 20 }, { wch: 12 }, { wch: 20 }];
+      const ws2 = XLSX.utils.json_to_sheet(rankRows);
+      ws2['!cols'] = [{ wch: 8 }, { wch: 14 }, { wch: 10 }];
+      XLSX.utils.book_append_sheet(wb, ws1, '적립내역');
+      XLSX.utils.book_append_sheet(wb, ws2, '누적랭킹');
+
+      const today = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(wb, 'KACY_POKER_포인트백업_' + today + '.xlsx');
+    } catch (e) {
+      alert('백업 파일을 만들지 못했어요. 다시 시도해주세요.');
+    } finally {
+      btn.textContent = originalText;
+      btn.disabled = false;
+    }
+  };
 
   window.adminLogin = function(){
     const input = document.getElementById('admin-pw-input');
