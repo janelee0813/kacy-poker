@@ -90,6 +90,20 @@
   <div id="scrollbar" class="h-full w-0 bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue shadow-[0_0_10px_#b566ff] transition-[width] duration-150"></div>
 </div>
 
+<!-- Navigation -->
+<nav class="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-sm">
+  <div class="mx-auto max-w-screen-sm px-5">
+    <div class="flex gap-2 py-3">
+      <button onclick="showPage('kacy')" id="btn-kacy" class="rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-4 py-1.5 text-[13px] font-semibold text-background transition-all">케이시포커</button>
+      <button onclick="showPage('notice')" id="btn-notice" class="rounded-full border border-border px-4 py-1.5 text-[13px] font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple">공지</button>
+      <button onclick="showPage('schedule')" id="btn-schedule" class="rounded-full border border-border px-4 py-1.5 text-[13px] font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple">스케줄</button>
+    </div>
+  </div>
+</nav>
+
+<!-- 케이시포커 페이지 -->
+<div id="page-kacy">
+
 <!-- Hero -->
 <section class="relative overflow-hidden">
   <div class="grid-bg absolute inset-0 -z-10"></div>
@@ -143,8 +157,54 @@
   </div>
 </section>
 
+</div>
+
+<!-- 공지 페이지 -->
+<div id="page-notice" class="hidden">
+  <section class="px-5 pt-10 pb-16 sm:pt-14 sm:pb-20">
+    <div class="mx-auto max-w-screen-sm">
+      <div class="mb-6">
+        <h2 class="text-2xl font-extrabold">📢 공지사항</h2>
+        <p class="mt-1.5 text-xs text-muted-foreground">케이시 포커 관련 소식을 전해드려요</p>
+      </div>
+      <div class="neon-card p-6 text-center animate-fade-up">
+        <p class="text-sm leading-relaxed text-muted-foreground">아직 등록된 공지가 없어요.<br/>새로운 소식이 있으면 이곳에 올려드릴게요!</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- 스케줄 페이지 -->
+<div id="page-schedule" class="hidden">
+  <section class="px-5 pt-10 pb-16 sm:pt-14 sm:pb-20">
+    <div class="mx-auto max-w-screen-sm">
+      <div class="mb-6">
+        <h2 class="text-2xl font-extrabold">🗓️ 스케줄</h2>
+        <p class="mt-1.5 text-xs text-muted-foreground">토너먼트·방송 일정을 확인하세요</p>
+      </div>
+      <div class="neon-card p-6 text-center animate-fade-up">
+        <p class="text-sm leading-relaxed text-muted-foreground">아직 등록된 스케줄이 없어요.<br/>일정이 확정되면 이곳에 올려드릴게요!</p>
+      </div>
+    </div>
+  </section>
+</div>
+
 <script>
 (function(){
+  const NAV_ACTIVE = 'rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-4 py-1.5 text-[13px] font-semibold text-background transition-all';
+  const NAV_INACTIVE = 'rounded-full border border-border px-4 py-1.5 text-[13px] font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple';
+  const PAGES = ['kacy', 'notice', 'schedule'];
+
+  window.showPage = function(name){
+    PAGES.forEach(function(p){
+      const pageEl = document.getElementById('page-' + p);
+      const btnEl = document.getElementById('btn-' + p);
+      const active = p === name;
+      if (pageEl) pageEl.classList.toggle('hidden', !active);
+      if (btnEl) btnEl.className = active ? NAV_ACTIVE : NAV_INACTIVE;
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
   const recentData = [
     { name: '따릉', delta: 1 },
     { name: '제인', delta: 2 },
