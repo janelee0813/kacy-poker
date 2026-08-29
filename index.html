@@ -243,10 +243,14 @@
         <div class="mt-5 neon-card p-4 sm:p-5">
           <h4 class="mb-3 text-xs font-bold uppercase tracking-wider text-neon-blue">댓글 <span id="notice-comment-count">0</span></h4>
           <div id="notice-comments-list" class="flex flex-col gap-2.5"></div>
-          <div class="mt-4 flex gap-2">
-            <input id="notice-comment-input" type="text" placeholder="댓글을 남겨주세요" maxlength="500" class="flex-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-neon-purple" />
-            <button onclick="submitComment()" class="shrink-0 rounded-lg bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-4 py-2 text-sm font-semibold text-background">등록</button>
+          <div class="mt-4 flex flex-col gap-2">
+            <input id="notice-comment-nickname" type="text" placeholder="닉네임" maxlength="20" class="w-28 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-neon-purple" />
+            <div class="flex gap-2">
+              <input id="notice-comment-input" type="text" placeholder="댓글을 남겨주세요" maxlength="500" onkeydown="if(event.key==='Enter') submitComment()" class="min-w-0 flex-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-neon-purple" />
+              <button onclick="submitComment()" class="shrink-0 rounded-lg bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-4 py-2 text-sm font-semibold text-background">등록</button>
+            </div>
           </div>
+          <p id="notice-comment-error" class="mt-2 hidden text-xs text-destructive"></p>
         </div>
       </div>
     </div>
@@ -686,14 +690,15 @@
 
   async function loadComments(noticeId){
     const el = document.getElementById('notice-comments-list');
-    const res = await fetch(SUPABASE_URL + '/rest/v1/notice_comments?notice_id=eq.' + noticeId + '&select=id,content,created_at&order=created_at.asc', { headers: sbHeaders() });
+    const res = await fetch(SUPABASE_URL + '/rest/v1/notice_comments?notice_id=eq.' + noticeId + '&select=id,nickname,content,created_at&order=created_at.asc', { headers: sbHeaders() });
     const comments = await res.json();
     document.getElementById('notice-comment-count').textContent = comments.length;
     el.innerHTML = comments.length
       ? comments.map(function(c){
           return `
           <div class="rounded-lg bg-white/5 px-3 py-2">
-            <p class="text-[13px] text-foreground/90">${escapeHtml(c.content)}</p>
+            <p class="text-[11.5px] font-bold text-neon-purple">${escapeHtml(c.nickname || '익명')}</p>
+            <p class="mt-0.5 text-[13px] text-foreground/90">${escapeHtml(c.content)}</p>
             <p class="mt-0.5 text-[10px] text-muted-foreground">${new Date(c.created_at).toLocaleString('ko-KR')}</p>
           </div>`;
         }).join('')
@@ -701,13 +706,26 @@
   }
 
   window.submitComment = async function(){
+    const nicknameInput = document.getElementById('notice-comment-nickname');
     const input = document.getElementById('notice-comment-input');
+    const errorEl = document.getElementById('notice-comment-error');
+    const nickname = nicknameInput.value.trim();
     const content = input.value.trim();
     const noticeId = document.getElementById('notice-detail-view').dataset.noticeId;
-    if (!content || !noticeId) return;
+    errorEl.classList.add('hidden');
+    if (!nickname) {
+      errorEl.textContent = '닉네임을 입력해주세요.';
+      errorEl.classList.remove('hidden');
+      return;
+    }
+    if (!content || !noticeId) {
+      errorEl.textContent = '댓글 내용을 입력해주세요.';
+      errorEl.classList.remove('hidden');
+      return;
+    }
     await fetch(SUPABASE_URL + '/rest/v1/notice_comments', {
       method: 'POST', headers: sbHeaders(true),
-      body: JSON.stringify({ notice_id: noticeId, content: content })
+      body: JSON.stringify({ notice_id: noticeId, nickname: nickname, content: content })
     });
     input.value = '';
     loadComments(noticeId);
@@ -988,13 +1006,13 @@
     const el = document.getElementById('admin-comments-list');
     if (!el) return;
     try {
-      const res = await fetch(SUPABASE_URL + '/rest/v1/notice_comments_with_title?select=id,content,notice_title,created_at&order=created_at.desc&limit=20', { headers: sbHeaders() });
+      const res = await fetch(SUPABASE_URL + '/rest/v1/notice_comments_with_title?select=id,nickname,content,notice_title,created_at&order=created_at.desc&limit=20', { headers: sbHeaders() });
       const comments = await res.json();
       el.innerHTML = comments.length ? comments.map(function(c){
         return `
         <div class="flex items-start justify-between gap-2 rounded-lg bg-white/5 px-3 py-2">
           <div class="min-w-0">
-            <p class="truncate text-[11px] text-muted-foreground">${escapeHtml(c.notice_title)}</p>
+            <p class="truncate text-[11px] text-muted-foreground">${escapeHtml(c.notice_title)} · ${escapeHtml(c.nickname || '익명')}</p>
             <p class="text-[13px] text-foreground/90">${escapeHtml(c.content)}</p>
           </div>
           <button onclick="adminDeleteComment('${c.id}')" class="shrink-0 rounded-lg border border-destructive/40 px-2.5 py-1 text-[11px] font-semibold text-destructive">삭제</button>
