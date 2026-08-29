@@ -292,6 +292,11 @@
         </div>
 
         <div class="neon-card p-4 sm:p-5">
+          <h3 class="mb-4 text-sm font-bold text-neon-pink">적립 현황</h3>
+          <div id="admin-points-log" class="flex max-h-[420px] flex-col gap-2 overflow-y-auto pr-1"></div>
+        </div>
+
+        <div class="neon-card p-4 sm:p-5">
           <h3 class="mb-4 text-sm font-bold text-neon-blue">공지 작성</h3>
           <input id="admin-notice-title" type="text" placeholder="제목" class="mb-2 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-neon-purple" />
           <textarea id="admin-notice-content" rows="4" placeholder="내용" class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-neon-purple"></textarea>
@@ -749,6 +754,7 @@
       if (!document.getElementById('admin-entries').children.length) window.adminAddRow();
       loadQuickNames();
       loadAdminComments();
+      loadAdminPointsLog();
       errorEl.classList.add('hidden');
     } else {
       errorEl.classList.remove('hidden');
@@ -762,6 +768,99 @@
     document.getElementById('admin-login').classList.remove('hidden');
     document.getElementById('admin-pw-input').value = '';
     document.getElementById('admin-login-error').classList.add('hidden');
+  };
+
+  // ===== 적립 현황 (조회/수정/삭제) =====
+  let pointsLogCache = [];
+  let editingPointId = null;
+
+  async function loadAdminPointsLog(){
+    const el = document.getElementById('admin-points-log');
+    if (!el) return;
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/points_log?select=id,name,delta,venue,earned_date,created_at&order=created_at.desc', { headers: sbHeaders() });
+      pointsLogCache = await res.json();
+      editingPointId = null;
+      renderAdminPointsLog();
+    } catch (e) {
+      el.innerHTML = '<p class="text-xs text-muted-foreground">불러오지 못했어요.</p>';
+    }
+  }
+
+  function renderAdminPointsLog(){
+    const el = document.getElementById('admin-points-log');
+    if (!el) return;
+    if (!pointsLogCache.length) {
+      el.innerHTML = '<p class="text-xs text-muted-foreground">적립된 내역이 없어요.</p>';
+      return;
+    }
+    el.innerHTML = pointsLogCache.map(function(r){
+      if (r.id === editingPointId) {
+        return `
+        <div class="flex flex-col gap-1.5 rounded-lg bg-white/5 px-3 py-2.5">
+          <div class="flex gap-1.5">
+            <input id="edit-name-${r.id}" type="text" value="${escapeHtml(r.name)}" class="min-w-0 flex-1 rounded-lg border border-border bg-surface px-2 py-1.5 text-xs text-foreground outline-none focus:border-neon-purple" />
+            <input id="edit-delta-${r.id}" type="number" value="${r.delta}" class="w-14 shrink-0 rounded-lg border border-border bg-surface px-2 py-1.5 text-xs text-foreground outline-none focus:border-neon-purple" />
+          </div>
+          <div class="flex gap-1.5">
+            <input id="edit-venue-${r.id}" type="text" value="${escapeHtml(r.venue || '')}" placeholder="장소" class="min-w-0 flex-1 rounded-lg border border-border bg-surface px-2 py-1.5 text-xs text-foreground outline-none focus:border-neon-purple" />
+            <input id="edit-date-${r.id}" type="date" value="${r.earned_date || ''}" class="shrink-0 rounded-lg border border-border bg-surface px-2 py-1.5 text-xs text-foreground outline-none focus:border-neon-purple" />
+          </div>
+          <div class="flex gap-1.5">
+            <button onclick="adminSavePoint('${r.id}')" class="flex-1 rounded-lg bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue py-1.5 text-xs font-bold text-background">저장</button>
+            <button onclick="adminCancelEditPoint()" class="shrink-0 rounded-lg border border-border px-3 text-xs text-muted-foreground">취소</button>
+          </div>
+        </div>`;
+      }
+      const sub = [formatMD(r.earned_date), r.venue].filter(Boolean).join(' · ');
+      return `
+      <div class="flex items-center justify-between gap-2 rounded-lg bg-white/5 px-3 py-2">
+        <div class="min-w-0">
+          <p class="truncate text-[13px] font-semibold text-foreground/90">${escapeHtml(r.name)} <span class="font-bold text-success">+${r.delta}</span></p>
+          ${sub ? `<p class="truncate text-[10.5px] text-muted-foreground">${escapeHtml(sub)}</p>` : ''}
+        </div>
+        <div class="flex shrink-0 gap-1.5">
+          <button onclick="adminEditPoint('${r.id}')" class="rounded-lg border border-border px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">수정</button>
+          <button onclick="adminDeletePoint('${r.id}')" class="rounded-lg border border-destructive/40 px-2.5 py-1 text-[11px] font-semibold text-destructive">삭제</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  window.adminEditPoint = function(id){
+    editingPointId = id;
+    renderAdminPointsLog();
+  };
+
+  window.adminCancelEditPoint = function(){
+    editingPointId = null;
+    renderAdminPointsLog();
+  };
+
+  window.adminSavePoint = async function(id){
+    const name = document.getElementById('edit-name-' + id).value.trim();
+    const delta = parseInt(document.getElementById('edit-delta-' + id).value, 10);
+    const venue = document.getElementById('edit-venue-' + id).value.trim();
+    const date = document.getElementById('edit-date-' + id).value;
+    if (!name || !delta || delta <= 0) { alert('이름과 점수를 확인해주세요.'); return; }
+    await fetch(SUPABASE_URL + '/rest/v1/rpc/admin_update_point', {
+      method: 'POST', headers: sbHeaders(true),
+      body: JSON.stringify({ input_password: ADMIN_PASSWORD, p_id: id, p_name: name, p_delta: delta, p_venue: venue || null, p_earned_date: date || null })
+    });
+    await loadAdminPointsLog();
+    loadPointsData();
+    loadQuickNames();
+  };
+
+  window.adminDeletePoint = async function(id){
+    if (!window.confirm('이 적립 내역을 삭제할까요?')) return;
+    await fetch(SUPABASE_URL + '/rest/v1/rpc/admin_delete_point', {
+      method: 'POST', headers: sbHeaders(true),
+      body: JSON.stringify({ input_password: ADMIN_PASSWORD, p_id: id })
+    });
+    await loadAdminPointsLog();
+    loadPointsData();
+    loadQuickNames();
   };
 
   window.adminSubmitPoints = async function(){
@@ -792,6 +891,7 @@
       document.getElementById('admin-venue').value = '';
       loadPointsData();
       loadQuickNames();
+      loadAdminPointsLog();
     } catch (e) {
       msgEl.textContent = '적립에 실패했어요. 다시 시도해주세요.'; msgEl.className = 'mt-2 text-xs text-destructive';
     }
