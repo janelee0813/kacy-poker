@@ -88,8 +88,8 @@
   }
   .btn-glow-strong{ animation: glowPulseStrong 1.4s ease-in-out infinite; }
   @keyframes borderGlow{
-    0%,100%{ box-shadow: 0 0 6px 1px rgba(181,102,255,0.35); border-color: rgba(181,102,255,0.5); }
-    50%{ box-shadow: 0 0 14px 3px rgba(255,95,176,0.65); border-color: rgba(255,95,176,0.85); }
+    0%,100%{ box-shadow: 0 0 6px 1px rgba(181,102,255,0.3); border-color: rgba(181,102,255,0.4); }
+    50%{ box-shadow: 0 0 14px 3px rgba(181,102,255,0.6); border-color: rgba(181,102,255,0.75); }
   }
   .btn-border-glow{ animation: borderGlow 1.6s ease-in-out infinite; }
   .grid-bg{
@@ -172,7 +172,7 @@
 
     <div class="mt-7 flex flex-wrap items-center gap-2.5 animate-fade-up" style="animation-delay:200ms">
       <a href="https://www.youtube.com/@%EC%BC%80%EC%9D%B4%EC%8B%9Ckacy" target="_blank" rel="noopener" class="btn-border-glow inline-flex items-center gap-2 rounded-full border-2 border-neon-purple/50 bg-surface/70 px-5 py-3 text-sm font-semibold text-foreground backdrop-blur transition-transform hover:scale-[1.02]">
-        <svg class="h-4 w-4 text-neon-pink" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8ZM9.6 15.5V8.5L15.8 12Z"/></svg>
+        <svg class="h-4 w-4 text-neon-purple" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8ZM9.6 15.5V8.5L15.8 12Z"/></svg>
         유튜브 라이브 보기
       </a>
       <a href="https://www.instagram.com/kacy_poker/" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-5 py-3 text-sm font-semibold text-background transition-transform hover:scale-[1.02]">
@@ -1046,9 +1046,13 @@
     }
   }
 
-  // ===== beta: 끝말잇기 =====
+  // ===== beta: 끝말잇기 (Supabase 연동 - 모두에게 공유/저장) =====
   let ggmWords = [];
-  let ggmPlayer = 1;
+
+  function ggmNextPlayer(){
+    if (!ggmWords.length) return 1;
+    return ggmWords[ggmWords.length - 1].player === 1 ? 2 : 1;
+  }
 
   function ggmRender(){
     const historyEl = document.getElementById('ggm-history');
@@ -1063,10 +1067,11 @@
       historyEl.scrollTop = historyEl.scrollHeight;
     }
 
+    const nextPlayer = ggmNextPlayer();
     const turnEl = document.getElementById('ggm-turn');
     if (turnEl) {
-      turnEl.textContent = '플레이어 ' + ggmPlayer + ' 차례';
-      turnEl.className = 'rounded-full px-3 py-1 text-xs font-bold ' + (ggmPlayer === 1 ? 'bg-neon-purple/15 text-neon-purple' : 'bg-neon-blue/15 text-neon-blue');
+      turnEl.textContent = '플레이어 ' + nextPlayer + ' 차례';
+      turnEl.className = 'rounded-full px-3 py-1 text-xs font-bold ' + (nextPlayer === 1 ? 'bg-neon-purple/15 text-neon-purple' : 'bg-neon-blue/15 text-neon-blue');
     }
 
     const nextCharEl = document.getElementById('ggm-next-char');
@@ -1080,7 +1085,17 @@
     }
   }
 
-  window.ggmSubmit = function(){
+  async function ggmLoad(){
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/wordchain_words?select=word,player,created_at&order=created_at.asc', { headers: sbHeaders() });
+      ggmWords = await res.json();
+    } catch (e) {
+      ggmWords = [];
+    }
+    ggmRender();
+  }
+
+  window.ggmSubmit = async function(){
     const input = document.getElementById('ggm-input');
     const errorEl = document.getElementById('ggm-error');
     const word = input.value.trim();
@@ -1106,19 +1121,34 @@
       }
     }
 
-    ggmWords.push({ word: word, player: ggmPlayer });
-    ggmPlayer = ggmPlayer === 1 ? 2 : 1;
-    input.value = '';
-    ggmRender();
-    input.focus();
+    const player = ggmNextPlayer();
+    try {
+      await fetch(SUPABASE_URL + '/rest/v1/wordchain_words', {
+        method: 'POST', headers: sbHeaders(true),
+        body: JSON.stringify({ word: word, player: player })
+      });
+      input.value = '';
+      await ggmLoad();
+      input.focus();
+    } catch (e) {
+      errorEl.textContent = '저장에 실패했어요. 다시 시도해주세요.';
+      errorEl.classList.remove('hidden');
+    }
   };
 
-  window.ggmReset = function(){
-    ggmWords = [];
-    ggmPlayer = 1;
-    const errorEl = document.getElementById('ggm-error');
-    if (errorEl) errorEl.classList.add('hidden');
-    ggmRender();
+  window.ggmReset = async function(){
+    const pw = window.prompt('전체 기록을 초기화합니다. 관리자 비밀번호를 입력해주세요.');
+    if (pw === null) return;
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/rpc/admin_reset_wordchain', {
+        method: 'POST', headers: sbHeaders(true),
+        body: JSON.stringify({ input_password: pw })
+      });
+      if (!res.ok) throw new Error('failed');
+      await ggmLoad();
+    } catch (e) {
+      alert('비밀번호가 올바르지 않아요.');
+    }
   };
 
   // ===== 초기 로드 =====
@@ -1126,7 +1156,7 @@
   renderSchedule();
   loadNotices();
   loadVisitorCount();
-  ggmRender();
+  ggmLoad();
 
   // 스크롤 진행바
   const bar = document.getElementById('scrollbar');
