@@ -93,6 +93,8 @@
   }
   .no-scrollbar::-webkit-scrollbar{ display:none; }
   .no-scrollbar{ -ms-overflow-style:none; scrollbar-width:none; }
+  @keyframes onlinePulse{0%,100%{opacity:1;box-shadow:0 0 6px #5ee0a8}50%{opacity:0.35;box-shadow:0 0 2px #5ee0a8}}
+  .live-dot{ animation: onlinePulse 1.4s ease-in-out infinite; }
 </style>
 </head>
 <body class="min-h-screen bg-background text-foreground font-sans">
@@ -134,7 +136,7 @@
     </div>
 
     <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-surface/70 px-3.5 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur animate-fade-up">
-      <span class="h-1.5 w-1.5 rounded-full bg-success shadow-[0_0_6px_#5ee0a8]"></span>
+      <span class="live-dot h-1.5 w-1.5 rounded-full bg-success shadow-[0_0_6px_#5ee0a8]"></span>
       <span>케이시 POKER VLOG · LIVE</span>
     </div>
 
