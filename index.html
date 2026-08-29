@@ -91,6 +91,8 @@
     height:1px;
     background: linear-gradient(90deg, transparent, rgba(181,102,255,0.6), rgba(255,95,176,0.5), transparent);
   }
+  .no-scrollbar::-webkit-scrollbar{ display:none; }
+  .no-scrollbar{ -ms-overflow-style:none; scrollbar-width:none; }
 </style>
 </head>
 <body class="min-h-screen bg-background text-foreground font-sans">
@@ -102,11 +104,16 @@
 
 <!-- Navigation -->
 <nav class="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-sm">
-  <div class="mx-auto max-w-screen-sm px-5">
-    <div class="flex gap-2 py-3">
-      <button onclick="showPage('kacy')" id="btn-kacy" class="rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-4 py-1.5 text-[13px] font-semibold text-background transition-all">케이시포커</button>
-      <button onclick="showPage('notice')" id="btn-notice" class="rounded-full border border-border px-4 py-1.5 text-[13px] font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple">공지</button>
-      <button onclick="showPage('schedule')" id="btn-schedule" class="rounded-full border border-border px-4 py-1.5 text-[13px] font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple">스케줄</button>
+  <div class="mx-auto flex max-w-screen-sm items-center justify-between gap-2 px-5 py-2.5">
+    <div class="no-scrollbar flex gap-2 overflow-x-auto">
+      <button onclick="showPage('kacy')" id="btn-kacy" class="shrink-0 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-3.5 py-1.5 text-[12.5px] font-semibold text-background transition-all">케이시포커</button>
+      <button onclick="showPage('schedule')" id="btn-schedule" class="shrink-0 rounded-full border border-border px-3.5 py-1.5 text-[12.5px] font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple">스케줄</button>
+      <button onclick="showPage('notice')" id="btn-notice" class="shrink-0 rounded-full border border-border px-3.5 py-1.5 text-[12.5px] font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple">공지</button>
+      <button onclick="showPage('admin')" id="btn-admin" class="shrink-0 rounded-full border border-border px-3.5 py-1.5 text-[12.5px] font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple">관리자</button>
+    </div>
+    <div id="visitor-badge" class="flex shrink-0 items-center gap-1 rounded-full border border-neon-purple/20 bg-surface/80 px-2.5 py-1">
+      <span class="text-[9px] text-muted-foreground">Total View</span>
+      <span id="visit-count" class="text-[9px] font-bold text-neon-purple">—</span>
     </div>
   </div>
 </nav>
@@ -141,6 +148,11 @@
       브이로그, 라이브 방송, 쇼츠로 함께 나누고 있습니다.<br/>
       케이시 포커에 많은 관심과 응원 부탁드립니다❣️
     </p>
+
+    <a href="https://www.youtube.com/@%EC%BC%80%EC%9D%B4%EC%8B%9Ckacy" target="_blank" rel="noopener" class="mt-7 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-5 py-3 text-sm font-semibold text-background shadow-[0_10px_40px_-10px_rgba(181,102,255,0.7)] transition-transform hover:scale-[1.02] animate-fade-up" style="animation-delay:200ms">
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8ZM9.6 15.5V8.5L15.8 12Z"/></svg>
+      유튜브 라이브 보기
+    </a>
   </div>
   <div class="divider-neon mx-auto max-w-screen-sm"></div>
 </section>
@@ -149,14 +161,11 @@
 <section class="px-5 pt-8 pb-10 sm:pt-10 sm:pb-12">
   <div class="mx-auto max-w-screen-sm">
     <div class="neon-card neon-card-glow p-4 sm:p-5">
-      <div class="mb-3 flex items-start justify-between gap-2">
-        <div>
-          <span class="text-[11px] font-semibold uppercase tracking-[0.2em] text-neon-purple">최근 적립</span>
-          <p class="mt-0.5 text-[11px] text-muted-foreground">8/28 · 언주 제이블러프</p>
-        </div>
+      <div class="mb-3 flex items-center justify-between gap-2">
+        <span class="text-[11px] font-semibold uppercase tracking-[0.2em] text-neon-purple">최근 적립</span>
         <span class="shrink-0 rounded-full bg-neon-purple/15 px-2.5 py-0.5 text-[10px] font-medium text-neon-purple">최근 5건</span>
       </div>
-      <div id="recent-list" class="flex flex-col gap-2.5"></div>
+      <div id="recent-list" class="flex flex-col gap-3"></div>
     </div>
   </div>
 </section>
@@ -182,8 +191,33 @@
         <h2 class="text-2xl font-extrabold">📢 공지사항</h2>
         <p class="mt-1.5 text-xs text-muted-foreground">케이시 포커 관련 소식을 전해드려요</p>
       </div>
-      <div class="neon-card p-6 text-center animate-fade-up">
-        <p class="text-sm leading-relaxed text-muted-foreground">아직 등록된 공지가 없어요.<br/>새로운 소식이 있으면 이곳에 올려드릴게요!</p>
+
+      <div id="notice-list-view" class="flex flex-col gap-3">
+        <div class="neon-card p-6 text-center">
+          <p class="text-sm text-muted-foreground">불러오는 중...</p>
+        </div>
+      </div>
+
+      <div id="notice-detail-view" class="hidden">
+        <button onclick="closeNoticeDetail()" class="mb-4 text-xs font-semibold text-muted-foreground">← 목록으로</button>
+        <div class="neon-card p-5">
+          <h3 id="notice-detail-title" class="text-lg font-bold"></h3>
+          <div class="mt-1.5 flex items-center gap-2 text-[11px] text-muted-foreground">
+            <span id="notice-detail-date"></span>
+            <span>·</span>
+            <span id="notice-detail-views">조회 0</span>
+          </div>
+          <p id="notice-detail-content" class="mt-4 whitespace-pre-line text-sm leading-relaxed text-foreground/90"></p>
+        </div>
+
+        <div class="mt-5 neon-card p-4 sm:p-5">
+          <h4 class="mb-3 text-xs font-bold uppercase tracking-wider text-neon-blue">댓글 <span id="notice-comment-count">0</span></h4>
+          <div id="notice-comments-list" class="flex flex-col gap-2.5"></div>
+          <div class="mt-4 flex gap-2">
+            <input id="notice-comment-input" type="text" placeholder="댓글을 남겨주세요" maxlength="500" class="flex-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-neon-purple" />
+            <button onclick="submitComment()" class="shrink-0 rounded-lg bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-4 py-2 text-sm font-semibold text-background">등록</button>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -202,11 +236,82 @@
   </section>
 </div>
 
+<!-- 관리자 페이지 -->
+<div id="page-admin" class="hidden">
+  <section class="px-5 pt-10 pb-16 sm:pt-14 sm:pb-20">
+    <div class="mx-auto max-w-screen-sm">
+      <div class="mb-6">
+        <h2 class="text-2xl font-extrabold">🔒 관리자</h2>
+        <p class="mt-1.5 text-xs text-muted-foreground">포인트 적립 · 공지 작성 · 댓글 관리</p>
+      </div>
+
+      <div id="admin-login" class="neon-card p-6">
+        <p class="mb-4 text-sm font-bold text-foreground/90">비밀번호를 입력해주세요</p>
+        <div class="flex gap-2">
+          <input id="admin-pw-input" type="password" placeholder="비밀번호" class="flex-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-neon-purple" />
+          <button onclick="adminLogin()" class="shrink-0 rounded-lg bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-4 py-2 text-sm font-semibold text-background">입장</button>
+        </div>
+        <p id="admin-login-error" class="mt-2 hidden text-xs text-destructive">비밀번호가 올바르지 않아요.</p>
+      </div>
+
+      <div id="admin-panel" class="hidden flex-col gap-5">
+
+        <div class="neon-card p-4 sm:p-5">
+          <h3 class="mb-4 text-sm font-bold text-neon-purple">포인트 적립</h3>
+          <div class="mb-3 flex gap-2">
+            <input id="admin-date" type="date" class="w-1/2 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-neon-purple" />
+            <input id="admin-venue" type="text" placeholder="장소 (예: 언주 제이블러프)" class="w-1/2 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-neon-purple" />
+          </div>
+          <div id="admin-entries" class="flex flex-col gap-2"></div>
+          <button onclick="adminAddRow()" class="mt-2 w-full rounded-lg border border-dashed border-border py-2 text-xs font-semibold text-muted-foreground">+ 인원 추가</button>
+          <button onclick="adminSubmitPoints()" class="mt-4 w-full rounded-lg bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue py-2.5 text-sm font-bold text-background">적립하기</button>
+          <p id="admin-submit-msg" class="mt-2 text-xs"></p>
+        </div>
+
+        <div class="neon-card p-4 sm:p-5">
+          <h3 class="mb-4 text-sm font-bold text-neon-blue">공지 작성</h3>
+          <input id="admin-notice-title" type="text" placeholder="제목" class="mb-2 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-neon-purple" />
+          <textarea id="admin-notice-content" rows="4" placeholder="내용" class="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-neon-purple"></textarea>
+          <button onclick="adminSubmitNotice()" class="mt-3 w-full rounded-lg bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue py-2.5 text-sm font-bold text-background">공지 등록</button>
+          <p id="admin-notice-msg" class="mt-2 text-xs"></p>
+        </div>
+
+        <div class="neon-card p-4 sm:p-5">
+          <h3 class="mb-4 text-sm font-bold text-neon-pink">댓글 관리</h3>
+          <div id="admin-comments-list" class="flex flex-col gap-2"></div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+</div>
+
 <script>
 (function(){
-  const NAV_ACTIVE = 'rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-4 py-1.5 text-[13px] font-semibold text-background transition-all';
-  const NAV_INACTIVE = 'rounded-full border border-border px-4 py-1.5 text-[13px] font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple';
-  const PAGES = ['kacy', 'notice', 'schedule'];
+  const SUPABASE_URL = 'https://hyrqpfivceyxvwbqqznj.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh5cnFwZml2Y2V5eHZ3YnFxem5qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5OTY4ODEsImV4cCI6MjEwMzU3Mjg4MX0.eJHMjL9wdGmRyZ6V6M5eYR5CWjeWVo1-0UOElgm22T4';
+  const ADMIN_PASSWORD = '77889900';
+
+  function sbHeaders(withBody){
+    const h = { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SUPABASE_ANON_KEY };
+    if (withBody) h['Content-Type'] = 'application/json';
+    return h;
+  }
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str == null ? '' : String(str);
+    return div.innerHTML;
+  }
+  function formatMD(isoDate){
+    if (!isoDate) return '';
+    const parts = isoDate.slice(0, 10).split('-');
+    return parseInt(parts[1], 10) + '/' + parseInt(parts[2], 10);
+  }
+
+  // ===== 네비게이션 =====
+  const NAV_ACTIVE = 'shrink-0 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-3.5 py-1.5 text-[12.5px] font-semibold text-background transition-all';
+  const NAV_INACTIVE = 'shrink-0 rounded-full border border-border px-3.5 py-1.5 text-[12.5px] font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple';
+  const PAGES = ['kacy', 'notice', 'schedule', 'admin'];
 
   window.showPage = function(name){
     PAGES.forEach(function(p){
@@ -218,46 +323,71 @@
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-  const recentData = [
-    { name: '따릉', delta: 1 },
-    { name: '제인', delta: 2 },
-    { name: '백호랭이', delta: 1 },
-    { name: '토탈맨', delta: 1 },
-    { name: '홀덤여행', delta: 2 },
-  ];
 
-  const rankData = [
-    { name: '헤롱이', score: 19 },
-    { name: '제이', score: 19 },
-    { name: '따릉', score: 17 },
-    { name: '킴님', score: 12 },
-    { name: '에르메스', score: 8 },
-    { name: '엠토리', score: 7 },
-    { name: '하퍼', score: 6 },
-    { name: '콜라겐남', score: 6 },
-    { name: '엽로어', score: 6 },
-    { name: '후니', score: 6 },
-    { name: '우트', score: 6 },
-    { name: '제인', score: 5 },
-    { name: '아카수딧', score: 5 },
-    { name: '윤', score: 4 },
-    { name: '에퀴티', score: 4 },
-    { name: '스안', score: 4 },
-    { name: '백호랭이', score: 4 },
-    { name: '퀸', score: 3 },
-    { name: '택시탄고등어', score: 3 },
-    { name: '토탈맨', score: 3 },
-    { name: '아직은 초보', score: 2 },
-    { name: '홀덤여행', score: 2 },
-    { name: '완설', score: 1 },
-    { name: '아론', score: 1 },
-    { name: '영호', score: 1 },
-    { name: '여운잉', score: 1 },
-    { name: '더블더블', score: 1 },
-    { name: '강아지상', score: 1 },
-    { name: '초렘', score: 1 },
-  ];
+  // ===== 최근 적립 / 랭킹 (Supabase 연동) =====
+  function renderRecent(data){
+    const el = document.getElementById('recent-list');
+    if (!el) return;
+    if (!data.length) {
+      el.innerHTML = '<p class="py-2 text-center text-xs text-muted-foreground">아직 적립된 포인트가 없어요.</p>';
+      return;
+    }
+    el.innerHTML = data.map((d, i) => {
+      const sub = [formatMD(d.earned_date), d.venue].filter(Boolean).join(' · ');
+      return `
+      <div class="flex items-center gap-3">
+        <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-neon-purple to-neon-pink text-[10px] font-bold text-background">${i + 1}</span>
+        <div class="min-w-0 flex-1">
+          <div class="truncate text-sm text-foreground/90">${escapeHtml(d.name)}</div>
+          ${sub ? `<div class="truncate text-[10.5px] text-muted-foreground">${escapeHtml(sub)}</div>` : ''}
+        </div>
+        <span class="shrink-0 text-sm font-bold text-success">+${d.delta}</span>
+      </div>`;
+    }).join('');
+  }
 
+  function renderRank(data){
+    const el = document.getElementById('rank-list');
+    if (!el) return;
+    if (!data.length) {
+      el.innerHTML = '<p class="py-2 text-center text-xs text-muted-foreground">아직 집계된 순위가 없어요.</p>';
+      return;
+    }
+    const max = Math.max(...data.map(d => d.score));
+    const medals = ['🥇','🥈','🥉'];
+    el.innerHTML = data.map((d, i) => {
+      const pct = Math.max(4, Math.round(d.score / max * 100));
+      const rankLabel = medals[i] || (i + 1);
+      return `
+      <div class="mb-4 last:mb-0">
+        <div class="mb-1.5 flex items-center justify-between gap-2">
+          <span class="flex min-w-0 items-center gap-2 text-[13.5px] font-semibold text-foreground/90">
+            <span class="w-5 shrink-0 text-center text-xs text-muted-foreground">${rankLabel}</span>
+            <span class="truncate">${escapeHtml(d.name)}</span>
+          </span>
+          <span class="shrink-0 text-xs font-bold text-neon-purple">${d.score}점</span>
+        </div>
+        <div class="h-2.5 rounded-full bg-white/5 overflow-hidden">
+          <div class="h-full rounded-full bg-gradient-to-r from-neon-purple to-neon-pink shadow-[0_0_8px_rgba(181,102,255,0.4)]" style="width:${pct}%"></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  async function loadPointsData(){
+    try {
+      const [recentRes, rankRes] = await Promise.all([
+        fetch(SUPABASE_URL + '/rest/v1/points_log?select=name,delta,venue,earned_date&order=created_at.desc&limit=5', { headers: sbHeaders() }),
+        fetch(SUPABASE_URL + '/rest/v1/points_ranking?select=name,score', { headers: sbHeaders() })
+      ]);
+      renderRecent(await recentRes.json());
+      renderRank(await rankRes.json());
+    } catch (e) {
+      console.error('포인트 데이터를 불러오지 못했어요', e);
+    }
+  }
+
+  // ===== 스케줄 =====
   const scheduleGroups = [
     { items: [
       { day: 2, venue: '구로 러너펍' },
@@ -294,10 +424,16 @@
   ];
   const DAY_NAMES = ['일','월','화','수','목','금','토'];
   const SCHEDULE_YEAR = 2026, SCHEDULE_MONTH = 8; // 9월 (0-indexed)
+  const ACCENTS = [
+    { bg: 'bg-neon-purple/12', border: 'border-neon-purple/40', text: 'text-neon-purple' },
+    { bg: 'bg-neon-pink/12', border: 'border-neon-pink/40', text: 'text-neon-pink' },
+    { bg: 'bg-neon-blue/12', border: 'border-neon-blue/40', text: 'text-neon-blue' },
+  ];
 
   function renderSchedule(groups){
     const el = document.getElementById('schedule-list');
     if (!el) return;
+    let itemIndex = 0;
     el.innerHTML = groups.map(function(g, gi){
       const spacing = gi > 0 ? 'mt-4' : '';
       if (g.banner) {
@@ -308,9 +444,11 @@
       }
       const rows = g.items.map(function(it){
         const dayName = DAY_NAMES[new Date(SCHEDULE_YEAR, SCHEDULE_MONTH, it.day).getDay()];
+        const accent = ACCENTS[itemIndex % ACCENTS.length];
+        itemIndex++;
         return `
         <div class="flex items-center gap-3">
-          <span class="shrink-0 rounded-lg border border-border bg-surface-elevated px-2.5 py-1.5 text-center text-[12px] font-bold text-foreground/90">9/${it.day}<span class="ml-1 font-normal text-muted-foreground">(${dayName})</span></span>
+          <span class="shrink-0 rounded-lg border ${accent.border} ${accent.bg} px-2.5 py-1.5 text-center text-[12px] font-bold ${accent.text}">9/${it.day}<span class="ml-1 font-normal text-muted-foreground">(${dayName})</span></span>
           <span class="text-[13.5px] text-foreground/85">${it.venue}</span>
         </div>`;
       }).join('<div class="my-2 h-px bg-white/5"></div>');
@@ -318,45 +456,225 @@
     }).join('');
   }
 
-  function renderRecent(data){
-    const el = document.getElementById('recent-list');
-    if (!el) return;
-    el.innerHTML = data.map((d, i) => `
-      <div class="flex items-center gap-3">
-        <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-neon-purple to-neon-pink text-[10px] font-bold text-background">${i + 1}</span>
-        <span class="flex-1 truncate text-sm text-foreground/90">${d.name}</span>
-        <span class="shrink-0 text-sm font-bold text-success">+${d.delta}</span>
-      </div>
-    `).join('');
+  // ===== 공지 게시판 =====
+  async function loadNotices(){
+    const el = document.getElementById('notice-list-view');
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/notices_with_counts?select=id,title,view_count,comment_count,created_at', { headers: sbHeaders() });
+      const list = await res.json();
+      if (!list.length) {
+        el.innerHTML = '<div class="neon-card p-6 text-center"><p class="text-sm text-muted-foreground">아직 등록된 공지가 없어요.</p></div>';
+        return;
+      }
+      el.innerHTML = list.map(function(n){
+        return `
+        <button onclick="openNotice('${n.id}')" class="neon-card p-4 text-left transition-transform active:scale-[0.99]">
+          <div class="flex items-center justify-between gap-2">
+            <h3 class="truncate text-sm font-bold text-foreground/90">${escapeHtml(n.title)}</h3>
+            <span class="shrink-0 text-[11px] text-muted-foreground">${formatMD(n.created_at)}</span>
+          </div>
+          <div class="mt-1.5 flex items-center gap-3 text-[11px] text-muted-foreground">
+            <span>👁 ${n.view_count}</span>
+            <span>💬 ${n.comment_count}</span>
+          </div>
+        </button>`;
+      }).join('');
+    } catch (e) {
+      el.innerHTML = '<div class="neon-card p-6 text-center"><p class="text-sm text-muted-foreground">공지를 불러오지 못했어요.</p></div>';
+    }
   }
 
-  function renderRank(data){
-    const el = document.getElementById('rank-list');
-    if (!el) return;
-    const max = Math.max(...data.map(d => d.score));
-    const medals = ['🥇','🥈','🥉'];
-    el.innerHTML = data.map((d, i) => {
-      const pct = Math.max(4, Math.round(d.score / max * 100));
-      const rankLabel = medals[i] || (i + 1);
-      return `
-      <div class="mb-4 last:mb-0">
-        <div class="mb-1.5 flex items-center justify-between gap-2">
-          <span class="flex min-w-0 items-center gap-2 text-[13.5px] font-semibold text-foreground/90">
-            <span class="w-5 shrink-0 text-center text-xs text-muted-foreground">${rankLabel}</span>
-            <span class="truncate">${d.name}</span>
-          </span>
-          <span class="shrink-0 text-xs font-bold text-neon-purple">${d.score}점</span>
-        </div>
-        <div class="h-2.5 rounded-full bg-white/5 overflow-hidden">
-          <div class="h-full rounded-full bg-gradient-to-r from-neon-purple to-neon-pink shadow-[0_0_8px_rgba(181,102,255,0.4)]" style="width:${pct}%"></div>
-        </div>
-      </div>`;
-    }).join('');
+  window.openNotice = async function(id){
+    const res = await fetch(SUPABASE_URL + '/rest/v1/notices?id=eq.' + id + '&select=id,title,content,view_count,created_at', { headers: sbHeaders() });
+    const rows = await res.json();
+    if (!rows.length) return;
+    const n = rows[0];
+    document.getElementById('notice-list-view').classList.add('hidden');
+    const detail = document.getElementById('notice-detail-view');
+    detail.classList.remove('hidden');
+    detail.dataset.noticeId = id;
+    document.getElementById('notice-detail-title').textContent = n.title;
+    document.getElementById('notice-detail-date').textContent = formatMD(n.created_at);
+    document.getElementById('notice-detail-content').textContent = n.content;
+    document.getElementById('notice-detail-views').textContent = '조회 ' + n.view_count;
+
+    fetch(SUPABASE_URL + '/rest/v1/rpc/increment_notice_view', {
+      method: 'POST', headers: sbHeaders(true), body: JSON.stringify({ p_id: id })
+    }).then(r => r.json()).then(count => {
+      document.getElementById('notice-detail-views').textContent = '조회 ' + count;
+    }).catch(function(){});
+
+    loadComments(id);
+  };
+
+  window.closeNoticeDetail = function(){
+    document.getElementById('notice-detail-view').classList.add('hidden');
+    document.getElementById('notice-list-view').classList.remove('hidden');
+    loadNotices();
+  };
+
+  async function loadComments(noticeId){
+    const el = document.getElementById('notice-comments-list');
+    const res = await fetch(SUPABASE_URL + '/rest/v1/notice_comments?notice_id=eq.' + noticeId + '&select=id,content,created_at&order=created_at.asc', { headers: sbHeaders() });
+    const comments = await res.json();
+    document.getElementById('notice-comment-count').textContent = comments.length;
+    el.innerHTML = comments.length
+      ? comments.map(function(c){
+          return `
+          <div class="rounded-lg bg-white/5 px-3 py-2">
+            <p class="text-[13px] text-foreground/90">${escapeHtml(c.content)}</p>
+            <p class="mt-0.5 text-[10px] text-muted-foreground">${new Date(c.created_at).toLocaleString('ko-KR')}</p>
+          </div>`;
+        }).join('')
+      : '<p class="text-xs text-muted-foreground">첫 댓글을 남겨보세요!</p>';
   }
 
-  renderRecent(recentData);
-  renderRank(rankData);
+  window.submitComment = async function(){
+    const input = document.getElementById('notice-comment-input');
+    const content = input.value.trim();
+    const noticeId = document.getElementById('notice-detail-view').dataset.noticeId;
+    if (!content || !noticeId) return;
+    await fetch(SUPABASE_URL + '/rest/v1/notice_comments', {
+      method: 'POST', headers: sbHeaders(true),
+      body: JSON.stringify({ notice_id: noticeId, content: content })
+    });
+    input.value = '';
+    loadComments(noticeId);
+  };
+
+  // ===== 관리자 =====
+  window.adminAddRow = function(){
+    const wrap = document.getElementById('admin-entries');
+    const row = document.createElement('div');
+    row.className = 'flex gap-2';
+    row.innerHTML =
+      '<input type="text" placeholder="이름" class="admin-entry-name flex-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-neon-purple" />' +
+      '<input type="number" placeholder="점수" value="1" min="1" class="admin-entry-delta w-16 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-neon-purple" />' +
+      '<button type="button" onclick="this.parentElement.remove()" class="shrink-0 rounded-lg border border-border px-3 text-xs text-muted-foreground">삭제</button>';
+    wrap.appendChild(row);
+  };
+
+  window.adminLogin = function(){
+    const input = document.getElementById('admin-pw-input');
+    const errorEl = document.getElementById('admin-login-error');
+    if (input.value === ADMIN_PASSWORD) {
+      document.getElementById('admin-login').classList.add('hidden');
+      const panel = document.getElementById('admin-panel');
+      panel.classList.remove('hidden');
+      panel.classList.add('flex');
+      const dateInput = document.getElementById('admin-date');
+      if (!dateInput.value) dateInput.value = new Date().toISOString().slice(0, 10);
+      if (!document.getElementById('admin-entries').children.length) window.adminAddRow();
+      loadAdminComments();
+      errorEl.classList.add('hidden');
+    } else {
+      errorEl.classList.remove('hidden');
+    }
+  };
+
+  window.adminSubmitPoints = async function(){
+    const date = document.getElementById('admin-date').value;
+    const venue = document.getElementById('admin-venue').value.trim();
+    const rows = Array.from(document.querySelectorAll('#admin-entries > div'));
+    const entries = rows.map(function(r){
+      return {
+        name: r.querySelector('.admin-entry-name').value.trim(),
+        delta: parseInt(r.querySelector('.admin-entry-delta').value, 10)
+      };
+    }).filter(function(e){ return e.name && e.delta > 0; });
+
+    const msgEl = document.getElementById('admin-submit-msg');
+    if (!entries.length) { msgEl.textContent = '이름과 점수를 입력해주세요.'; msgEl.className = 'mt-2 text-xs text-destructive'; return; }
+    if (!venue) { msgEl.textContent = '장소를 입력해주세요.'; msgEl.className = 'mt-2 text-xs text-destructive'; return; }
+
+    msgEl.textContent = '적립 중...'; msgEl.className = 'mt-2 text-xs text-muted-foreground';
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/rpc/admin_add_points', {
+        method: 'POST', headers: sbHeaders(true),
+        body: JSON.stringify({ input_password: ADMIN_PASSWORD, p_entries: entries, p_venue: venue, p_earned_date: date })
+      });
+      if (!res.ok) throw new Error('failed');
+      msgEl.textContent = '적립 완료! 최근/랭킹에 반영됐어요.'; msgEl.className = 'mt-2 text-xs text-success';
+      document.getElementById('admin-entries').innerHTML = '';
+      window.adminAddRow();
+      document.getElementById('admin-venue').value = '';
+      loadPointsData();
+    } catch (e) {
+      msgEl.textContent = '적립에 실패했어요. 다시 시도해주세요.'; msgEl.className = 'mt-2 text-xs text-destructive';
+    }
+  };
+
+  window.adminSubmitNotice = async function(){
+    const title = document.getElementById('admin-notice-title').value.trim();
+    const content = document.getElementById('admin-notice-content').value.trim();
+    const msgEl = document.getElementById('admin-notice-msg');
+    if (!title || !content) { msgEl.textContent = '제목과 내용을 입력해주세요.'; msgEl.className = 'mt-2 text-xs text-destructive'; return; }
+    msgEl.textContent = '등록 중...'; msgEl.className = 'mt-2 text-xs text-muted-foreground';
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/rpc/admin_create_notice', {
+        method: 'POST', headers: sbHeaders(true),
+        body: JSON.stringify({ input_password: ADMIN_PASSWORD, p_title: title, p_content: content })
+      });
+      if (!res.ok) throw new Error('failed');
+      msgEl.textContent = '등록 완료!'; msgEl.className = 'mt-2 text-xs text-success';
+      document.getElementById('admin-notice-title').value = '';
+      document.getElementById('admin-notice-content').value = '';
+      loadNotices();
+      loadAdminComments();
+    } catch (e) {
+      msgEl.textContent = '등록에 실패했어요.'; msgEl.className = 'mt-2 text-xs text-destructive';
+    }
+  };
+
+  async function loadAdminComments(){
+    const el = document.getElementById('admin-comments-list');
+    if (!el) return;
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/notice_comments_with_title?select=id,content,notice_title,created_at&order=created_at.desc&limit=20', { headers: sbHeaders() });
+      const comments = await res.json();
+      el.innerHTML = comments.length ? comments.map(function(c){
+        return `
+        <div class="flex items-start justify-between gap-2 rounded-lg bg-white/5 px-3 py-2">
+          <div class="min-w-0">
+            <p class="truncate text-[11px] text-muted-foreground">${escapeHtml(c.notice_title)}</p>
+            <p class="text-[13px] text-foreground/90">${escapeHtml(c.content)}</p>
+          </div>
+          <button onclick="adminDeleteComment('${c.id}')" class="shrink-0 rounded-lg border border-destructive/40 px-2.5 py-1 text-[11px] font-semibold text-destructive">삭제</button>
+        </div>`;
+      }).join('') : '<p class="text-xs text-muted-foreground">등록된 댓글이 없어요.</p>';
+    } catch (e) {
+      el.innerHTML = '<p class="text-xs text-muted-foreground">댓글을 불러오지 못했어요.</p>';
+    }
+  }
+
+  window.adminDeleteComment = async function(id){
+    if (!window.confirm('이 댓글을 삭제할까요?')) return;
+    await fetch(SUPABASE_URL + '/rest/v1/rpc/admin_delete_comment', {
+      method: 'POST', headers: sbHeaders(true),
+      body: JSON.stringify({ input_password: ADMIN_PASSWORD, p_id: id })
+    });
+    loadAdminComments();
+    loadNotices();
+  };
+
+  // ===== 방문자수 =====
+  async function loadVisitorCount(){
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/rpc/increment_site_views', {
+        method: 'POST', headers: sbHeaders(true), body: '{}'
+      });
+      const count = await res.json();
+      document.getElementById('visit-count').textContent = Number(count).toLocaleString();
+    } catch (e) {
+      document.getElementById('visit-count').textContent = '-';
+    }
+  }
+
+  // ===== 초기 로드 =====
+  loadPointsData();
   renderSchedule(scheduleGroups);
+  loadNotices();
+  loadVisitorCount();
 
   // 스크롤 진행바
   const bar = document.getElementById('scrollbar');
@@ -368,7 +686,7 @@
   document.addEventListener('scroll', updateScroll, { passive: true });
   updateScroll();
 
-  // 섹션 스크롤 리빌
+  // 섹션 스크롤 리빌 (히어로 다음 섹션들)
   function hide(el, ty){
     el.style.opacity = '0';
     el.style.transform = `translateY(${ty}px)`;
@@ -382,7 +700,7 @@
       el.style.opacity = ''; el.style.transform = ''; el.style.transition = '';
     }, { once: true });
   }
-  const revealTargets = document.querySelectorAll('section:not(:first-of-type) > div');
+  const revealTargets = document.querySelectorAll('#page-kacy section:not(:first-of-type) > div');
   revealTargets.forEach(el => hide(el, 32));
   const obs = new IntersectionObserver(entries => {
     entries.forEach(e => {
