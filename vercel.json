@@ -1,6 +1,5 @@
 {
   "rewrites": [
-    { "source": "/notice", "destination": "/index.html" },
     { "source": "/schedule", "destination": "/index.html" },
     { "source": "/beta", "destination": "/index.html" },
     { "source": "/admin", "destination": "/index.html" }
