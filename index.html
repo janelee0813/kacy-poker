@@ -978,10 +978,10 @@
     const isRed = card.suit === '♥' || card.suit === '♦';
     const colorClass = isRed ? 'text-red-600' : 'text-neutral-900';
     return `
-    <div class="hand-card-deal flex h-28 w-20 flex-col justify-between rounded-xl bg-[#f8f8f0] p-2 shadow-[0_10px_28px_-8px_rgba(0,0,0,0.55)] sm:h-32 sm:w-24" style="animation-delay:${delay}ms">
-      <span class="text-left text-base font-extrabold leading-tight ${colorClass}">${card.rank}<br/>${card.suit}</span>
-      <span class="self-center text-3xl ${colorClass}">${card.suit}</span>
-      <span class="inline-block rotate-180 self-end text-base font-extrabold leading-tight ${colorClass}">${card.rank}<br/>${card.suit}</span>
+    <div class="hand-card-deal flex h-32 w-20 shrink-0 flex-col justify-between rounded-xl bg-[#f8f8f0] p-2.5 shadow-[0_10px_28px_-8px_rgba(0,0,0,0.55)] sm:h-36 sm:w-24" style="animation-delay:${delay}ms">
+      <span class="text-left text-sm font-extrabold leading-none ${colorClass}">${card.rank}${card.suit}</span>
+      <span class="self-center text-3xl leading-none ${colorClass}">${card.suit}</span>
+      <span class="inline-block rotate-180 self-end text-sm font-extrabold leading-none ${colorClass}">${card.rank}${card.suit}</span>
     </div>`;
   }
 
