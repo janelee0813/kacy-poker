@@ -324,6 +324,20 @@
   </section>
 </div>
 
+<!-- 참여 신청 모달 -->
+<div id="rsvp-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 px-5" onclick="rsvpCloseModal()">
+  <div class="w-full max-w-xs rounded-2xl border border-border bg-surface p-5" onclick="event.stopPropagation()">
+    <h3 class="mb-1 text-sm font-bold text-foreground/90">참여 신청</h3>
+    <p id="rsvp-modal-date" class="mb-4 text-xs text-muted-foreground"></p>
+    <input id="rsvp-nickname-input" type="text" maxlength="12" placeholder="닉네임" onkeydown="if(event.key==='Enter') rsvpSubmit()" class="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-neon-purple" />
+    <p id="rsvp-error" class="mt-2 hidden text-xs text-destructive"></p>
+    <div class="mt-4 flex gap-2">
+      <button onclick="rsvpCloseModal()" class="flex-1 rounded-lg border border-border py-2.5 text-sm font-semibold text-muted-foreground">취소</button>
+      <button onclick="rsvpSubmit()" class="flex-1 rounded-lg bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue py-2.5 text-sm font-bold text-background">신청</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
   const SUPABASE_URL = 'https://hyrqpfivceyxvwbqqznj.supabase.co';
@@ -621,7 +635,7 @@
     return list;
   }
 
-  function renderScheduleEntries(entries, monthKey, todayDay){
+  function renderScheduleEntries(entries, monthKey, todayDay, rsvpMap, allowRsvp){
     let html = '';
     let i = 0;
     let first = true;
@@ -643,22 +657,47 @@
           const accent = accentForVenue(it.venue);
           const mapUrl = 'https://map.naver.com/p/search/' + encodeURIComponent(it.venue);
           const isToday = todayDay !== null && it.day === todayDay;
+          const attendees = (rsvpMap && rsvpMap[it.day]) || [];
+          const attendeePills = ['케이시'].concat(attendees).map(function(n, idx){
+            const hostClass = idx === 0
+              ? 'bg-gradient-to-r from-warning to-neon-pink text-background'
+              : 'bg-gradient-to-r from-neon-pink to-neon-purple text-background';
+            return `<span class="rounded-full ${hostClass} px-2.5 py-0.5 text-[10px] font-bold">${escapeHtml(n)}</span>`;
+          }).join('');
+          const rsvpButton = allowRsvp
+            ? `<button onclick="rsvpOpenModal(${monthKey}, ${it.day})" class="shrink-0 rounded-full border border-neon-pink/40 bg-neon-pink/10 px-2.5 py-1 text-[10.5px] font-semibold text-neon-pink transition-colors hover:bg-neon-pink/20">+ 참여</button>`
+            : '';
           rows.push(`
-          <div class="flex items-center gap-3">
-            <span class="shrink-0 rounded-lg border ${accent.border} ${accent.bg} px-2.5 py-1.5 text-center text-[12px] font-bold ${accent.text}">${monthKey + 1}/${it.day}<span class="ml-1 font-normal text-muted-foreground">(${dayName})</span></span>
-            <span class="min-w-0 flex-1 truncate text-[13.5px] text-foreground/85">${it.venue}</span>
-            ${isToday ? '<span class="shrink-0 rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-bold text-success">오늘</span>' : ''}
-            <a href="${mapUrl}" target="_blank" rel="noopener" class="shrink-0 rounded-full border border-border px-2.5 py-1 text-[11px] font-semibold text-muted-foreground transition-colors hover:border-neon-purple/50 hover:text-neon-purple">📍 위치</a>
+          <div>
+            <div class="flex items-center gap-3">
+              <span class="shrink-0 rounded-lg border ${accent.border} ${accent.bg} px-2.5 py-1.5 text-center text-[12px] font-bold ${accent.text}">${monthKey + 1}/${it.day}<span class="ml-1 font-normal text-muted-foreground">(${dayName})</span></span>
+              <span class="min-w-0 flex-1 truncate text-[13.5px] text-foreground/85">${it.venue}</span>
+              ${isToday ? '<span class="shrink-0 rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-bold text-success">오늘</span>' : ''}
+              <a href="${mapUrl}" target="_blank" rel="noopener" class="shrink-0 rounded-full border border-border px-2.5 py-1 text-[11px] font-semibold text-muted-foreground transition-colors hover:border-neon-purple/50 hover:text-neon-purple">📍 위치</a>
+            </div>
+            <div class="mt-1.5 flex flex-wrap items-center gap-1.5">${attendeePills}${rsvpButton}</div>
           </div>`);
           i++;
         }
-        html += `<div class="${spacing} flex flex-col gap-2.5">${rows.join('<div class="my-2 h-px bg-white/5"></div>')}</div>`;
+        html += `<div class="${spacing} flex flex-col gap-3">${rows.join('<div class="my-1 h-px bg-white/5"></div>')}</div>`;
       }
     }
     return html;
   }
 
-  function renderSchedule(){
+  async function loadRsvps(monthKey){
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/schedule_rsvps?year=eq.' + SCHEDULE_YEAR + '&month=eq.' + monthKey + '&select=day,nickname&order=created_at.asc', { headers: sbHeaders() });
+      const rows = await res.json();
+      const map = {};
+      rows.forEach(function(r){ (map[r.day] = map[r.day] || []).push(r.nickname); });
+      return map;
+    } catch (e) {
+      return {};
+    }
+  }
+
+  async function renderSchedule(){
     const monthKey = SCHEDULE_MONTH_KEYS[scheduleMonthIndex];
     const data = SCHEDULE_DATA[monthKey];
     const el = document.getElementById('schedule-list');
@@ -685,14 +724,16 @@
       past = flat;
     }
 
-    let html = renderScheduleEntries(upcoming, monthKey, todayDay);
+    const rsvpMap = await loadRsvps(monthKey);
+
+    let html = renderScheduleEntries(upcoming, monthKey, todayDay, rsvpMap, true);
     if (past.length) {
       html += `
       <div class="mt-6 mb-3 flex items-center gap-2">
         <span class="text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">완료된 일정</span>
         <div class="h-px flex-1 bg-white/10"></div>
       </div>
-      <div class="opacity-55">${renderScheduleEntries(past, monthKey, null)}</div>`;
+      <div class="opacity-55">${renderScheduleEntries(past, monthKey, null, rsvpMap, false)}</div>`;
     }
     if (!upcoming.length && !past.length) {
       html = '<p class="py-6 text-center text-xs text-muted-foreground">등록된 일정이 없어요.</p>';
@@ -705,6 +746,51 @@
     if (next < 0 || next >= SCHEDULE_MONTH_KEYS.length) return;
     scheduleMonthIndex = next;
     renderSchedule();
+  };
+
+  let rsvpTarget = null;
+
+  window.rsvpOpenModal = function(monthKey, day){
+    rsvpTarget = { year: SCHEDULE_YEAR, month: monthKey, day: day };
+    document.getElementById('rsvp-modal-date').textContent = (monthKey + 1) + '/' + day + ' 참여 신청';
+    document.getElementById('rsvp-nickname-input').value = '';
+    document.getElementById('rsvp-error').classList.add('hidden');
+    const modal = document.getElementById('rsvp-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.getElementById('rsvp-nickname-input').focus();
+  };
+
+  window.rsvpCloseModal = function(){
+    const modal = document.getElementById('rsvp-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    rsvpTarget = null;
+  };
+
+  window.rsvpSubmit = async function(){
+    const input = document.getElementById('rsvp-nickname-input');
+    const errorEl = document.getElementById('rsvp-error');
+    const nickname = input.value.trim();
+    errorEl.classList.add('hidden');
+    if (!nickname) {
+      errorEl.textContent = '닉네임을 입력해주세요.';
+      errorEl.classList.remove('hidden');
+      return;
+    }
+    if (!rsvpTarget) return;
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/schedule_rsvps', {
+        method: 'POST', headers: sbHeaders(true),
+        body: JSON.stringify({ year: rsvpTarget.year, month: rsvpTarget.month, day: rsvpTarget.day, nickname: nickname })
+      });
+      if (!res.ok) throw new Error('failed');
+      window.rsvpCloseModal();
+      renderSchedule();
+    } catch (e) {
+      errorEl.textContent = '신청에 실패했어요. 다시 시도해주세요.';
+      errorEl.classList.remove('hidden');
+    }
   };
 
   // ===== 관리자 =====
