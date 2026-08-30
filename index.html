@@ -1315,19 +1315,19 @@
     holdemRenderCards('holdem-opp-cards', oppHole, 2);
     statusEl.textContent = '핸드 확인 중...';
 
-    await holdemSleep(800);
+    await holdemSleep(3000);
     const board = [deck.pop(), deck.pop(), deck.pop()];
     holdemRenderCards('holdem-board-cards', board, 5);
     statusEl.textContent = '플랍!';
 
-    await holdemSleep(900);
+    await holdemSleep(3000);
     board.push(deck.pop());
     holdemRenderCards('holdem-board-cards', board, 5);
     statusEl.textContent = '턴!';
 
-    await holdemSleep(900);
+    await holdemSleep(1000);
     statusEl.textContent = '리버 공개 중...';
-    await holdemSleep(1700);
+    await holdemSleep(4000);
     board.push(deck.pop());
     holdemRenderCards('holdem-board-cards', board, 5);
 
