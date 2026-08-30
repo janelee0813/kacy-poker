@@ -266,6 +266,23 @@
         <div id="hand-cards" class="flex items-center justify-center gap-4"></div>
         <p id="hand-date" class="mt-6 text-xs text-muted-foreground"></p>
       </div>
+
+      <div class="neon-card p-5 text-center sm:p-6" style="margin-top:1.5rem">
+        <p class="mb-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-neon-blue">🎮 미니 홀덤 승부 (오늘 운세 체크용)</p>
+
+        <p class="mb-1.5 text-[11px] font-semibold text-muted-foreground">상대</p>
+        <div id="holdem-opp-cards" class="mb-4 flex items-center justify-center gap-2"></div>
+
+        <p class="mb-1.5 text-[11px] font-semibold text-muted-foreground">커뮤니티 카드</p>
+        <div id="holdem-board-cards" class="mb-4 flex items-center justify-center gap-1.5"></div>
+
+        <p class="mb-1.5 text-[11px] font-semibold text-muted-foreground">나</p>
+        <div id="holdem-my-cards" class="mb-4 flex items-center justify-center gap-2"></div>
+
+        <p id="holdem-status" class="mb-3 min-h-[20px] text-xs text-muted-foreground"></p>
+
+        <button id="holdem-btn" onclick="holdemPlay()" class="rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-6 py-2.5 text-sm font-bold text-background transition-transform hover:scale-[1.03]">한 판 시작</button>
+      </div>
     </div>
   </section>
 </div>
@@ -1157,12 +1174,193 @@
     }
   }
 
+  // ===== beta: 미니 홀덤 승부 =====
+  const HOLDEM_SUITS = ['♠','♥','♦','♣'];
+  const HOLDEM_RANKS = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+  const HOLDEM_RANK_VALUE = { '2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13,'A':14 };
+  const HOLDEM_HAND_NAMES = ['하이카드','원페어','투페어','트리플','스트레이트','플러시','풀하우스','포카드','스트레이트 플러시'];
+  let holdemPlaying = false;
+
+  function holdemBuildDeck(){
+    const deck = [];
+    HOLDEM_SUITS.forEach(function(s){
+      HOLDEM_RANKS.forEach(function(r){
+        deck.push({ rank: r, suit: s, rankVal: HOLDEM_RANK_VALUE[r] });
+      });
+    });
+    return deck;
+  }
+
+  function holdemShuffle(deck){
+    for (let i = deck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const t = deck[i]; deck[i] = deck[j]; deck[j] = t;
+    }
+    return deck;
+  }
+
+  function holdemSleep(ms){
+    return new Promise(function(resolve){ setTimeout(resolve, ms); });
+  }
+
+  function holdemCombinations(arr, k){
+    const results = [];
+    function helper(start, combo){
+      if (combo.length === k) { results.push(combo.slice()); return; }
+      for (let i = start; i < arr.length; i++) {
+        combo.push(arr[i]);
+        helper(i + 1, combo);
+        combo.pop();
+      }
+    }
+    helper(0, []);
+    return results;
+  }
+
+  function holdemEvaluate5(cards){
+    const ranks = cards.map(function(c){ return c.rankVal; }).sort(function(a, b){ return b - a; });
+    const suits = cards.map(function(c){ return c.suit; });
+    const isFlush = suits.every(function(s){ return s === suits[0]; });
+
+    const counts = {};
+    ranks.forEach(function(r){ counts[r] = (counts[r] || 0) + 1; });
+    const groups = Object.keys(counts).map(function(r){ return { rank: Number(r), count: counts[r] }; });
+    groups.sort(function(a, b){ return b.count - a.count || b.rank - a.rank; });
+
+    const uniqueRanks = Array.from(new Set(ranks)).sort(function(a, b){ return b - a; });
+    let straightHigh = null;
+    if (uniqueRanks.length === 5) {
+      if (uniqueRanks[0] - uniqueRanks[4] === 4) {
+        straightHigh = uniqueRanks[0];
+      } else if (uniqueRanks[0] === 14 && uniqueRanks[1] === 5 && uniqueRanks[2] === 4 && uniqueRanks[3] === 3 && uniqueRanks[4] === 2) {
+        straightHigh = 5;
+      }
+    }
+
+    const pattern = groups.map(function(g){ return g.count; }).join('');
+
+    if (straightHigh && isFlush) return [8, straightHigh];
+    if (pattern === '41') return [7, groups[0].rank, groups[1].rank];
+    if (pattern === '32') return [6, groups[0].rank, groups[1].rank];
+    if (isFlush) return [5].concat(ranks);
+    if (straightHigh) return [4, straightHigh];
+    if (pattern === '311') return [3, groups[0].rank, groups[1].rank, groups[2].rank];
+    if (pattern === '221') return [2, Math.max(groups[0].rank, groups[1].rank), Math.min(groups[0].rank, groups[1].rank), groups[2].rank];
+    if (pattern === '2111') return [1, groups[0].rank, groups[1].rank, groups[2].rank, groups[3].rank];
+    return [0].concat(ranks);
+  }
+
+  function holdemCompareScores(a, b){
+    const len = Math.max(a.length, b.length);
+    for (let i = 0; i < len; i++) {
+      const av = a[i] || 0, bv = b[i] || 0;
+      if (av !== bv) return av - bv;
+    }
+    return 0;
+  }
+
+  function holdemBestHand(cards7){
+    const combos = holdemCombinations(cards7, 5);
+    let best = null;
+    combos.forEach(function(c){
+      const score = holdemEvaluate5(c);
+      if (!best || holdemCompareScores(score, best) > 0) best = score;
+    });
+    return best;
+  }
+
+  function holdemMiniCard(card){
+    if (!card) {
+      return '<div class="h-16 w-11 rounded-md border border-dashed border-white/15 sm:h-[70px] sm:w-12"></div>';
+    }
+    const isRed = card.suit === '♥' || card.suit === '♦';
+    const colorClass = isRed ? 'text-red-600' : 'text-neutral-900';
+    return `
+    <div class="hand-card-deal flex h-16 w-11 flex-col items-center justify-center gap-0.5 rounded-md bg-[#f8f8f0] shadow-[0_6px_16px_-6px_rgba(0,0,0,0.5)] sm:h-[70px] sm:w-12">
+      <span class="text-[13px] font-extrabold leading-none ${colorClass}">${card.rank}</span>
+      <span class="text-base leading-none ${colorClass}">${card.suit}</span>
+    </div>`;
+  }
+
+  function holdemRenderCards(id, cards, total){
+    const el = document.getElementById(id);
+    if (!el) return;
+    const arr = [];
+    for (let i = 0; i < total; i++) arr.push(cards[i] || null);
+    el.innerHTML = arr.map(holdemMiniCard).join('');
+  }
+
+  function holdemInit(){
+    holdemRenderCards('holdem-opp-cards', [], 2);
+    holdemRenderCards('holdem-board-cards', [], 5);
+    holdemRenderCards('holdem-my-cards', [], 2);
+  }
+
+  window.holdemPlay = async function(){
+    if (holdemPlaying) return;
+    holdemPlaying = true;
+    const btn = document.getElementById('holdem-btn');
+    const statusEl = document.getElementById('holdem-status');
+    btn.disabled = true;
+    btn.textContent = '진행 중...';
+    statusEl.textContent = '';
+    statusEl.className = 'mb-3 min-h-[20px] text-xs text-muted-foreground';
+    holdemInit();
+
+    const deck = holdemShuffle(holdemBuildDeck());
+    const myHole = [deck.pop(), deck.pop()];
+    const oppHole = [deck.pop(), deck.pop()];
+
+    holdemRenderCards('holdem-my-cards', myHole, 2);
+    holdemRenderCards('holdem-opp-cards', oppHole, 2);
+    statusEl.textContent = '핸드 확인 중...';
+
+    await holdemSleep(800);
+    const board = [deck.pop(), deck.pop(), deck.pop()];
+    holdemRenderCards('holdem-board-cards', board, 5);
+    statusEl.textContent = '플랍!';
+
+    await holdemSleep(900);
+    board.push(deck.pop());
+    holdemRenderCards('holdem-board-cards', board, 5);
+    statusEl.textContent = '턴!';
+
+    await holdemSleep(900);
+    statusEl.textContent = '리버 공개 중...';
+    await holdemSleep(1700);
+    board.push(deck.pop());
+    holdemRenderCards('holdem-board-cards', board, 5);
+
+    await holdemSleep(400);
+    const myScore = holdemBestHand(myHole.concat(board));
+    const oppScore = holdemBestHand(oppHole.concat(board));
+    const cmp = holdemCompareScores(myScore, oppScore);
+    const myHandName = HOLDEM_HAND_NAMES[myScore[0]];
+    const oppHandName = HOLDEM_HAND_NAMES[oppScore[0]];
+
+    if (cmp > 0) {
+      statusEl.textContent = '🎉 승리! (' + myHandName + ' vs ' + oppHandName + ')';
+      statusEl.className = 'mb-3 min-h-[20px] text-sm font-bold text-success';
+    } else if (cmp < 0) {
+      statusEl.textContent = '😢 패배 (' + myHandName + ' vs ' + oppHandName + ')';
+      statusEl.className = 'mb-3 min-h-[20px] text-sm font-bold text-destructive';
+    } else {
+      statusEl.textContent = '🤝 무승부 (' + myHandName + ')';
+      statusEl.className = 'mb-3 min-h-[20px] text-sm font-bold text-warning';
+    }
+
+    btn.disabled = false;
+    btn.textContent = '다시 하기';
+    holdemPlaying = false;
+  };
+
   // ===== 초기 로드 =====
   window.showPage(pageFromPath(window.location.pathname), { skipPush: true, skipScroll: true });
   loadPointsData();
   renderSchedule();
   loadVisitorCount();
   renderTodayHand();
+  holdemInit();
 
   // 스크롤 진행바
   const bar = document.getElementById('scrollbar');
