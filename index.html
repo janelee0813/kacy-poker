@@ -409,8 +409,18 @@
   const NAV_ACTIVE = 'shrink-0 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-2 py-1.5 text-[11.5px] md:px-3.5 md:py-2 md:text-sm font-semibold text-background transition-all';
   const NAV_INACTIVE = 'shrink-0 rounded-full border border-border px-2 py-1.5 text-[11.5px] md:px-3.5 md:py-2 md:text-sm font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple';
   const PAGES = ['kacy', 'notice', 'schedule', 'beta', 'admin'];
+  const PAGE_PATHS = { kacy: '/', notice: '/notice', schedule: '/schedule', beta: '/beta', admin: '/admin' };
 
-  window.showPage = function(name){
+  function pageFromPath(pathname){
+    const clean = pathname.replace(/\/+$/, '') || '/';
+    for (const key in PAGE_PATHS) {
+      if (PAGE_PATHS[key] === clean) return key;
+    }
+    return 'kacy';
+  }
+
+  window.showPage = function(name, opts){
+    opts = opts || {};
     PAGES.forEach(function(p){
       const pageEl = document.getElementById('page-' + p);
       const btnEl = document.getElementById('btn-' + p);
@@ -418,8 +428,20 @@
       if (pageEl) pageEl.classList.toggle('hidden', !active);
       if (btnEl) btnEl.className = active ? NAV_ACTIVE : NAV_INACTIVE;
     });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (!opts.skipPush) {
+      const path = PAGE_PATHS[name] || '/';
+      if (window.location.pathname !== path) {
+        history.pushState({ page: name }, '', path);
+      }
+    }
+    if (!opts.skipScroll) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
+
+  window.addEventListener('popstate', function(){
+    window.showPage(pageFromPath(window.location.pathname), { skipPush: true, skipScroll: true });
+  });
 
   // ===== 스크롤 진입 시 한 번만 애니메이션을 트리거하는 헬퍼 =====
   function revealOnScroll(container, applyFn){
@@ -1152,6 +1174,7 @@
   };
 
   // ===== 초기 로드 =====
+  window.showPage(pageFromPath(window.location.pathname), { skipPush: true, skipScroll: true });
   loadPointsData();
   renderSchedule();
   loadNotices();
