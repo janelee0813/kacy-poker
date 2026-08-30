@@ -318,6 +318,10 @@
           <div id="admin-points-log" class="flex max-h-[420px] flex-col gap-2 overflow-y-auto pr-1"></div>
         </div>
 
+        <div class="neon-card p-4 sm:p-5">
+          <h3 class="mb-4 text-sm font-bold text-neon-blue">참여자 관리</h3>
+          <div id="admin-rsvp-list" class="flex max-h-[360px] flex-col gap-2 overflow-y-auto pr-1"></div>
+        </div>
 
       </div>
     </div>
@@ -899,6 +903,7 @@
       if (!document.getElementById('admin-entries').children.length) window.adminAddRow();
       loadQuickNames();
       loadAdminPointsLog();
+      loadAdminRsvps();
       errorEl.classList.add('hidden');
     } else {
       errorEl.classList.remove('hidden');
@@ -912,6 +917,38 @@
     document.getElementById('admin-login').classList.remove('hidden');
     document.getElementById('admin-pw-input').value = '';
     document.getElementById('admin-login-error').classList.add('hidden');
+  };
+
+  // ===== 참여자 관리 =====
+  async function loadAdminRsvps(){
+    const el = document.getElementById('admin-rsvp-list');
+    if (!el) return;
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/schedule_rsvps?select=id,year,month,day,nickname,created_at&order=created_at.desc&limit=50', { headers: sbHeaders() });
+      const rows = await res.json();
+      el.innerHTML = rows.length ? rows.map(function(r){
+        return `
+        <div class="flex items-center justify-between gap-2 rounded-lg bg-white/5 px-3 py-2">
+          <div class="min-w-0">
+            <p class="truncate text-[13px] font-semibold text-foreground/90">${escapeHtml(r.nickname)}</p>
+            <p class="text-[10.5px] text-muted-foreground">${r.month + 1}/${r.day} 참여 신청</p>
+          </div>
+          <button onclick="adminDeleteRsvp('${r.id}')" class="shrink-0 rounded-lg border border-destructive/40 px-2.5 py-1 text-[11px] font-semibold text-destructive">삭제</button>
+        </div>`;
+      }).join('') : '<p class="text-xs text-muted-foreground">참여 신청 내역이 없어요.</p>';
+    } catch (e) {
+      el.innerHTML = '<p class="text-xs text-muted-foreground">불러오지 못했어요.</p>';
+    }
+  }
+
+  window.adminDeleteRsvp = async function(id){
+    if (!window.confirm('이 참여 신청을 삭제할까요?')) return;
+    await fetch(SUPABASE_URL + '/rest/v1/rpc/admin_delete_rsvp', {
+      method: 'POST', headers: sbHeaders(true),
+      body: JSON.stringify({ input_password: ADMIN_PASSWORD, p_id: id })
+    });
+    loadAdminRsvps();
+    renderSchedule();
   };
 
   // ===== 적립 현황 (조회/수정/삭제) =====
