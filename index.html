@@ -111,6 +111,11 @@
     50%{ transform: translateY(-10px) rotate(1.5deg); }
   }
   .char-float{ animation: charFloat 4s ease-in-out infinite; }
+  @keyframes cardDeal{
+    0%{ opacity:0; transform: translateY(16px) rotate(-8deg) scale(0.85); }
+    100%{ opacity:1; transform: translateY(0) rotate(0deg) scale(1); }
+  }
+  .hand-card-deal{ animation: cardDeal .6s cubic-bezier(.22,1,.36,1) both; }
 </style>
 </head>
 <body class="min-h-screen bg-background text-foreground font-sans">
@@ -288,29 +293,14 @@
         <span>이곳은 새로운 기능을 테스트하는 페이지예요. 언제든 내용이 바뀌거나 사라질 수 있어요.</span>
       </div>
       <div class="mb-6">
-        <h2 class="text-2xl font-extrabold">🔤 끝말잇기</h2>
-        <p class="mt-1.5 text-xs text-muted-foreground">둘이서 번갈아 단어를 이어보세요 (사전 검증은 없어요, 서로 확인!)</p>
+        <h2 class="text-2xl font-extrabold">🃏 오늘의 핸드</h2>
+        <p class="mt-1.5 text-xs text-muted-foreground">매일 오전 7시에 새로운 핸드로 바뀌어요</p>
       </div>
 
-      <div class="neon-card p-4 sm:p-5">
-        <div class="mb-3 flex items-center justify-between">
-          <span id="ggm-turn" class="rounded-full bg-neon-purple/15 px-3 py-1 text-xs font-bold text-neon-purple">플레이어 1 차례</span>
-          <button onclick="ggmReset()" class="rounded-full border border-border px-3 py-1 text-[11px] font-semibold text-muted-foreground">다시 시작</button>
-        </div>
-
-        <div id="ggm-history" class="mb-3 flex max-h-64 flex-col gap-1.5 overflow-y-auto rounded-lg bg-white/5 p-3"></div>
-
-        <div class="mb-2 text-center">
-          <span class="text-[11px] text-muted-foreground">다음 단어는</span>
-          <span id="ggm-next-char" class="mx-1 text-lg font-extrabold text-neon-pink">아무 글자</span>
-          <span class="text-[11px] text-muted-foreground">(으)로 시작</span>
-        </div>
-
-        <div class="flex gap-2">
-          <input id="ggm-input" type="text" placeholder="단어를 입력하세요" onkeydown="if(event.key==='Enter') ggmSubmit()" class="min-w-0 flex-1 rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-neon-purple" />
-          <button onclick="ggmSubmit()" class="shrink-0 rounded-lg bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-4 py-2.5 text-sm font-bold text-background">제출</button>
-        </div>
-        <p id="ggm-error" class="mt-2 hidden text-xs text-destructive"></p>
+      <div class="neon-card neon-card-glow flex flex-col items-center p-6 text-center sm:p-8">
+        <span class="mb-6 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-3.5 py-1.5 text-xs font-bold text-background">🍀 오늘 행운의 핸드</span>
+        <div id="hand-cards" class="flex items-center justify-center gap-4"></div>
+        <p id="hand-date" class="mt-6 text-xs text-muted-foreground"></p>
       </div>
     </div>
   </section>
@@ -1130,110 +1120,59 @@
     }
   }
 
-  // ===== beta: 끝말잇기 (Supabase 연동 - 모두에게 공유/저장) =====
-  let ggmWords = [];
-
-  function ggmNextPlayer(){
-    if (!ggmWords.length) return 1;
-    return ggmWords[ggmWords.length - 1].player === 1 ? 2 : 1;
+  // ===== beta: 오늘의 핸드 (매일 오전 7시 갱신, 모두가 같은 핸드를 봄) =====
+  function seededRandom(seedStr){
+    let h = 0;
+    for (let i = 0; i < seedStr.length; i++) { h = (h << 5) - h + seedStr.charCodeAt(i); h |= 0; }
+    return function(){
+      h = (h * 1103515245 + 12345) & 0x7fffffff;
+      return h / 0x7fffffff;
+    };
   }
 
-  function ggmRender(){
-    const historyEl = document.getElementById('ggm-history');
-    if (!historyEl) return;
-    if (!ggmWords.length) {
-      historyEl.innerHTML = '<p class="py-4 text-center text-xs text-muted-foreground">첫 단어를 입력해서 시작해보세요!</p>';
-    } else {
-      historyEl.innerHTML = ggmWords.map(function(w){
-        const color = w.player === 1 ? 'text-neon-purple' : 'text-neon-blue';
-        return `<div class="flex items-center gap-2 text-sm"><span class="shrink-0 text-[10px] font-bold ${color}">P${w.player}</span><span class="text-foreground/90">${escapeHtml(w.word)}</span></div>`;
-      }).join('');
-      historyEl.scrollTop = historyEl.scrollHeight;
-    }
-
-    const nextPlayer = ggmNextPlayer();
-    const turnEl = document.getElementById('ggm-turn');
-    if (turnEl) {
-      turnEl.textContent = '플레이어 ' + nextPlayer + ' 차례';
-      turnEl.className = 'rounded-full px-3 py-1 text-xs font-bold ' + (nextPlayer === 1 ? 'bg-neon-purple/15 text-neon-purple' : 'bg-neon-blue/15 text-neon-blue');
-    }
-
-    const nextCharEl = document.getElementById('ggm-next-char');
-    if (nextCharEl) {
-      if (ggmWords.length) {
-        const last = ggmWords[ggmWords.length - 1].word;
-        nextCharEl.textContent = last[last.length - 1];
-      } else {
-        nextCharEl.textContent = '아무 글자';
-      }
-    }
+  function handDayKey(){
+    const now = new Date();
+    const d = new Date(now);
+    if (now.getHours() < 7) d.setDate(d.getDate() - 1);
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
   }
 
-  async function ggmLoad(){
-    try {
-      const res = await fetch(SUPABASE_URL + '/rest/v1/wordchain_words?select=word,player,created_at&order=created_at.asc', { headers: sbHeaders() });
-      ggmWords = await res.json();
-    } catch (e) {
-      ggmWords = [];
+  function todayHand(){
+    const key = handDayKey();
+    const rand = seededRandom('kacy-hand-' + key);
+    const ranks = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+    const suits = ['♠','♥','♦','♣'];
+    const deck = [];
+    suits.forEach(function(s){ ranks.forEach(function(r){ deck.push({ rank: r, suit: s }); }); });
+    for (let i = deck.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1));
+      const tmp = deck[i]; deck[i] = deck[j]; deck[j] = tmp;
     }
-    ggmRender();
+    return { key: key, cards: [deck[0], deck[1]] };
   }
 
-  window.ggmSubmit = async function(){
-    const input = document.getElementById('ggm-input');
-    const errorEl = document.getElementById('ggm-error');
-    const word = input.value.trim();
-    errorEl.classList.add('hidden');
+  function renderHandCard(card, delay){
+    const isRed = card.suit === '♥' || card.suit === '♦';
+    const colorClass = isRed ? 'text-red-600' : 'text-neutral-900';
+    return `
+    <div class="hand-card-deal flex h-28 w-20 flex-col justify-between rounded-xl bg-[#f8f8f0] p-2 shadow-[0_10px_28px_-8px_rgba(0,0,0,0.55)] sm:h-32 sm:w-24" style="animation-delay:${delay}ms">
+      <span class="text-left text-base font-extrabold leading-tight ${colorClass}">${card.rank}<br/>${card.suit}</span>
+      <span class="self-center text-3xl ${colorClass}">${card.suit}</span>
+      <span class="inline-block rotate-180 self-end text-base font-extrabold leading-tight ${colorClass}">${card.rank}<br/>${card.suit}</span>
+    </div>`;
+  }
 
-    if (!word || word.length < 2) {
-      errorEl.textContent = '두 글자 이상 입력해주세요.';
-      errorEl.classList.remove('hidden');
-      return;
+  function renderTodayHand(){
+    const el = document.getElementById('hand-cards');
+    const dateEl = document.getElementById('hand-date');
+    if (!el) return;
+    const hand = todayHand();
+    el.innerHTML = hand.cards.map(function(c, i){ return renderHandCard(c, i * 150); }).join('');
+    if (dateEl) {
+      const parts = hand.key.split('-');
+      dateEl.textContent = parts[1] + '/' + parts[2] + ' 핸드 · 매일 오전 7시 갱신';
     }
-    if (ggmWords.some(function(w){ return w.word === word; })) {
-      errorEl.textContent = '이미 나온 단어예요.';
-      errorEl.classList.remove('hidden');
-      return;
-    }
-    if (ggmWords.length) {
-      const last = ggmWords[ggmWords.length - 1].word;
-      const lastChar = last[last.length - 1];
-      if (word[0] !== lastChar) {
-        errorEl.textContent = '"' + lastChar + '"(으)로 시작하는 단어를 입력해주세요.';
-        errorEl.classList.remove('hidden');
-        return;
-      }
-    }
-
-    const player = ggmNextPlayer();
-    try {
-      await fetch(SUPABASE_URL + '/rest/v1/wordchain_words', {
-        method: 'POST', headers: sbHeaders(true),
-        body: JSON.stringify({ word: word, player: player })
-      });
-      input.value = '';
-      await ggmLoad();
-      input.focus();
-    } catch (e) {
-      errorEl.textContent = '저장에 실패했어요. 다시 시도해주세요.';
-      errorEl.classList.remove('hidden');
-    }
-  };
-
-  window.ggmReset = async function(){
-    const pw = window.prompt('전체 기록을 초기화합니다. 관리자 비밀번호를 입력해주세요.');
-    if (pw === null) return;
-    try {
-      const res = await fetch(SUPABASE_URL + '/rest/v1/rpc/admin_reset_wordchain', {
-        method: 'POST', headers: sbHeaders(true),
-        body: JSON.stringify({ input_password: pw })
-      });
-      if (!res.ok) throw new Error('failed');
-      await ggmLoad();
-    } catch (e) {
-      alert('비밀번호가 올바르지 않아요.');
-    }
-  };
+  }
 
   // ===== 초기 로드 =====
   window.showPage(pageFromPath(window.location.pathname), { skipPush: true, skipScroll: true });
@@ -1241,7 +1180,7 @@
   renderSchedule();
   loadNotices();
   loadVisitorCount();
-  ggmLoad();
+  renderTodayHand();
 
   // 스크롤 진행바
   const bar = document.getElementById('scrollbar');
