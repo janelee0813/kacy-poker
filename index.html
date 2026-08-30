@@ -223,7 +223,10 @@
 <!-- 스케줄 페이지 -->
 <div id="page-schedule" class="hidden">
   <section class="px-5 pt-10 pb-16 sm:pt-14 sm:pb-20">
-    <div class="mx-auto max-w-screen-sm md:max-w-2xl lg:max-w-3xl">
+    <div class="relative mx-auto max-w-screen-sm pt-9 md:max-w-2xl lg:max-w-3xl">
+      <button onclick="shareCurrentUrl(this)" class="absolute right-0 top-0 z-10 flex h-7 w-7 items-center justify-center rounded-full border border-border bg-surface/80 text-muted-foreground transition-colors hover:border-neon-purple/50 hover:text-neon-purple" title="URL 복사" aria-label="URL 복사">
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      </button>
       <div class="mb-6 flex items-center justify-between gap-2">
         <div>
           <h2 id="schedule-title" class="text-2xl font-extrabold">🗓️ 8월 일정</h2>
@@ -242,7 +245,10 @@
 <!-- beta 페이지 -->
 <div id="page-beta" class="hidden">
   <section class="px-5 pt-10 pb-16 sm:pt-14 sm:pb-20">
-    <div class="mx-auto max-w-screen-sm md:max-w-2xl lg:max-w-3xl">
+    <div class="relative mx-auto max-w-screen-sm pt-9 md:max-w-2xl lg:max-w-3xl">
+      <button onclick="shareCurrentUrl(this)" class="absolute right-0 top-0 z-10 flex h-7 w-7 items-center justify-center rounded-full border border-border bg-surface/80 text-muted-foreground transition-colors hover:border-neon-purple/50 hover:text-neon-purple" title="URL 복사" aria-label="URL 복사">
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      </button>
       <div class="mb-6">
         <h2 class="text-2xl font-extrabold">🃏 오늘의 핸드</h2>
         <p class="mt-1.5 text-xs text-muted-foreground">오늘 꼭 써봐야 할 행운의 핸드!</p>
@@ -260,7 +266,10 @@
 <!-- 관리자 페이지 -->
 <div id="page-admin" class="hidden">
   <section class="px-5 pt-10 pb-16 sm:pt-14 sm:pb-20">
-    <div class="mx-auto max-w-screen-sm md:max-w-2xl lg:max-w-3xl">
+    <div class="relative mx-auto max-w-screen-sm pt-9 md:max-w-2xl lg:max-w-3xl">
+      <button onclick="shareCurrentUrl(this)" class="absolute right-0 top-0 z-10 flex h-7 w-7 items-center justify-center rounded-full border border-border bg-surface/80 text-muted-foreground transition-colors hover:border-neon-purple/50 hover:text-neon-purple" title="URL 복사" aria-label="URL 복사">
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      </button>
       <div class="mb-6">
         <h2 class="text-2xl font-extrabold">🔒 관리자</h2>
         <p class="mt-1.5 text-xs text-muted-foreground">포인트 적립 관리</p>
@@ -336,6 +345,32 @@
     const parts = isoDate.slice(0, 10).split('-');
     return parseInt(parts[1], 10) + '/' + parseInt(parts[2], 10);
   }
+
+  function fallbackCopy(text){
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus(); ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+
+  window.shareCurrentUrl = function(btn){
+    const url = window.location.href;
+    const showCopied = function(){
+      const original = btn.innerHTML;
+      btn.innerHTML = '<svg class="h-3.5 w-3.5 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>';
+      setTimeout(function(){ btn.innerHTML = original; }, 1200);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(showCopied).catch(function(){ fallbackCopy(url); showCopied(); });
+    } else {
+      fallbackCopy(url);
+      showCopied();
+    }
+  };
 
   // ===== 네비게이션 =====
   const NAV_ACTIVE = 'shrink-0 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-2 py-1.5 text-[11.5px] md:px-3.5 md:py-2 md:text-sm font-semibold text-background transition-all';
