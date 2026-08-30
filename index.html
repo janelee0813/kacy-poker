@@ -122,18 +122,18 @@
 
 <!-- Navigation -->
 <nav class="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-sm">
-  <div class="mx-auto max-w-screen-sm px-5 py-2">
+  <div class="mx-auto max-w-screen-sm md:max-w-2xl lg:max-w-3xl px-5 py-2">
     <div class="flex items-center justify-between gap-1.5">
       <div class="flex gap-1.5">
-        <button onclick="showPage('kacy')" id="btn-kacy" class="shrink-0 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-2 py-1.5 text-[11.5px] font-semibold text-background transition-all">케이시포커</button>
-        <button onclick="showPage('schedule')" id="btn-schedule" class="shrink-0 rounded-full border border-border px-2 py-1.5 text-[11.5px] font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple">스케줄</button>
-        <button onclick="showPage('notice')" id="btn-notice" class="shrink-0 rounded-full border border-border px-2 py-1.5 text-[11.5px] font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple">공지</button>
-        <button onclick="showPage('beta')" id="btn-beta" class="shrink-0 rounded-full border border-border px-2 py-1.5 text-[11.5px] font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple">beta</button>
-        <button onclick="showPage('admin')" id="btn-admin" class="shrink-0 rounded-full border border-border px-2 py-1.5 text-[11.5px] font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple">관리자</button>
+        <button onclick="showPage('kacy')" id="btn-kacy" class="shrink-0 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-2 py-1.5 text-[11.5px] md:px-3.5 md:py-2 md:text-sm font-semibold text-background transition-all">케이시포커</button>
+        <button onclick="showPage('schedule')" id="btn-schedule" class="shrink-0 rounded-full border border-border px-2 py-1.5 text-[11.5px] md:px-3.5 md:py-2 md:text-sm font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple">스케줄</button>
+        <button onclick="showPage('notice')" id="btn-notice" class="shrink-0 rounded-full border border-border px-2 py-1.5 text-[11.5px] md:px-3.5 md:py-2 md:text-sm font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple">공지</button>
+        <button onclick="showPage('beta')" id="btn-beta" class="shrink-0 rounded-full border border-border px-2 py-1.5 text-[11.5px] md:px-3.5 md:py-2 md:text-sm font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple">beta</button>
+        <button onclick="showPage('admin')" id="btn-admin" class="shrink-0 rounded-full border border-border px-2 py-1.5 text-[11.5px] md:px-3.5 md:py-2 md:text-sm font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple">관리자</button>
       </div>
-      <div id="visitor-badge" class="flex shrink-0 items-center gap-1 rounded-full border border-neon-purple/20 bg-surface/80 px-1.5 py-1">
-        <span class="text-[8px] text-muted-foreground">Total View</span>
-        <span id="visit-count" class="text-[8px] font-bold text-neon-purple">—</span>
+      <div id="visitor-badge" class="flex shrink-0 items-center gap-1 rounded-full border border-neon-purple/20 bg-surface/80 px-1.5 py-1 md:px-2.5 md:py-1.5">
+        <span class="text-[8px] text-muted-foreground md:text-[10px]">Total View</span>
+        <span id="visit-count" class="text-[8px] font-bold text-neon-purple md:text-[10px]">—</span>
       </div>
     </div>
   </div>
@@ -146,7 +146,7 @@
 <section class="relative overflow-hidden">
   <div class="grid-bg absolute inset-0 -z-10"></div>
   <div class="absolute inset-x-0 top-0 -z-10 h-px bg-gradient-to-r from-transparent via-neon-purple/60 to-transparent"></div>
-  <div class="mx-auto max-w-screen-sm px-5 pt-6 pb-14 sm:pt-8 sm:pb-20">
+  <div class="mx-auto max-w-screen-sm md:max-w-2xl lg:max-w-3xl px-5 pt-6 pb-14 sm:pt-8 sm:pb-20">
 
     <div class="mb-5 text-right animate-fade-up">
       <a href="https://open.kakao.com/o/gW9SHGLg" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-4 py-2 text-xs font-semibold text-background shadow-[0_6px_20px_-6px_rgba(181,102,255,0.7)] transition-transform hover:scale-[1.03]">
@@ -159,7 +159,7 @@
       <span>케이시 POKER VLOG · LIVE</span>
     </div>
 
-    <h1 class="text-[38px] font-extrabold leading-[1.15] tracking-tight sm:text-5xl animate-fade-up" style="animation-delay:60ms">
+    <h1 class="text-[38px] font-extrabold leading-[1.15] tracking-tight sm:text-5xl lg:text-6xl animate-fade-up" style="animation-delay:60ms">
       케이시<img src="assets/kacy-character.png" alt="케이시" class="ml-2 inline-block shrink-0 rounded-md align-middle object-cover" style="width:1em;height:1em;transform:translateY(-0.1em)" /><br/>
       <span class="text-gradient-neon">KACY POKER</span>
     </h1>
@@ -185,7 +185,7 @@
 
 <!-- 최근 적립 포인트 -->
 <section class="px-5 pt-2 pb-10 sm:pt-3 sm:pb-12">
-  <div class="mx-auto max-w-screen-sm">
+  <div class="mx-auto max-w-screen-sm md:max-w-2xl lg:max-w-3xl">
     <div class="neon-card neon-card-glow p-4 sm:p-5">
       <div class="mb-3 flex items-center justify-between gap-2">
         <span class="text-[11px] font-semibold uppercase tracking-[0.2em] text-neon-purple">최근 적립</span>
@@ -198,7 +198,7 @@
 
 <!-- 케톡방 랭킹 -->
 <section class="px-5 pb-16 sm:pb-20">
-  <div class="mx-auto max-w-screen-sm">
+  <div class="mx-auto max-w-screen-sm md:max-w-2xl lg:max-w-3xl">
     <div class="mb-6 text-center">
       <h2 class="text-2xl font-extrabold">🏆 8월 케톡방 랭킹 🏆</h2>
       <p class="mt-1.5 text-xs text-muted-foreground">누적 포인트 기준 순위예요</p>
@@ -216,7 +216,7 @@
 <!-- 공지 페이지 -->
 <div id="page-notice" class="hidden">
   <section class="px-5 pt-10 pb-16 sm:pt-14 sm:pb-20">
-    <div class="mx-auto max-w-screen-sm">
+    <div class="mx-auto max-w-screen-sm md:max-w-2xl lg:max-w-3xl">
       <div class="mb-6">
         <h2 class="text-2xl font-extrabold">📢 공지사항</h2>
         <p class="mt-1.5 text-xs text-muted-foreground">케이시 포커 관련 소식을 전해드려요</p>
@@ -260,7 +260,7 @@
 <!-- 스케줄 페이지 -->
 <div id="page-schedule" class="hidden">
   <section class="px-5 pt-10 pb-16 sm:pt-14 sm:pb-20">
-    <div class="mx-auto max-w-screen-sm">
+    <div class="mx-auto max-w-screen-sm md:max-w-2xl lg:max-w-3xl">
       <div class="mb-6 flex items-center justify-between gap-2">
         <div>
           <h2 id="schedule-title" class="text-2xl font-extrabold">🗓️ 8월 일정</h2>
@@ -279,7 +279,7 @@
 <!-- beta 페이지 -->
 <div id="page-beta" class="hidden">
   <section class="px-5 pt-10 pb-16 sm:pt-14 sm:pb-20">
-    <div class="mx-auto max-w-screen-sm">
+    <div class="mx-auto max-w-screen-sm md:max-w-2xl lg:max-w-3xl">
       <div class="mb-6 flex items-center gap-2 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-[12.5px] font-semibold text-warning">
         <span>🧪</span>
         <span>이곳은 새로운 기능을 테스트하는 페이지예요. 언제든 내용이 바뀌거나 사라질 수 있어요.</span>
@@ -316,7 +316,7 @@
 <!-- 관리자 페이지 -->
 <div id="page-admin" class="hidden">
   <section class="px-5 pt-10 pb-16 sm:pt-14 sm:pb-20">
-    <div class="mx-auto max-w-screen-sm">
+    <div class="mx-auto max-w-screen-sm md:max-w-2xl lg:max-w-3xl">
       <div class="mb-6">
         <h2 class="text-2xl font-extrabold">🔒 관리자</h2>
         <p class="mt-1.5 text-xs text-muted-foreground">포인트 적립 · 공지 작성 · 댓글 관리</p>
@@ -406,8 +406,8 @@
   }
 
   // ===== 네비게이션 =====
-  const NAV_ACTIVE = 'shrink-0 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-2 py-1.5 text-[11.5px] font-semibold text-background transition-all';
-  const NAV_INACTIVE = 'shrink-0 rounded-full border border-border px-2 py-1.5 text-[11.5px] font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple';
+  const NAV_ACTIVE = 'shrink-0 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-2 py-1.5 text-[11.5px] md:px-3.5 md:py-2 md:text-sm font-semibold text-background transition-all';
+  const NAV_INACTIVE = 'shrink-0 rounded-full border border-border px-2 py-1.5 text-[11.5px] md:px-3.5 md:py-2 md:text-sm font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple';
   const PAGES = ['kacy', 'notice', 'schedule', 'beta', 'admin'];
 
   window.showPage = function(name){
