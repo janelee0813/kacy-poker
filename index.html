@@ -576,13 +576,13 @@
           { day: 15, venue: '역삼 러너펍' },
           { day: 17, venue: '인계 러너펍' },
         ]},
-        { banner: { emoji: '🏖️', text: '9/18~20 휴가' } },
+        { banner: { emoji: '🏖️', text: '9/18~20 휴가', day: 18 } },
         { items: [
           { day: 21, venue: '구리 러너펍' },
           { day: 22, venue: '논현 러너펍' },
           { day: 23, venue: '목동 KMGM' },
         ]},
-        { banner: { emoji: '🌕', text: '9/24~25 해피추석 🧡' } },
+        { banner: { emoji: '🌕', text: '9/24~25 해피추석 🧡', day: 24 } },
         { items: [
           { day: 26, venue: '구로 러너펍' },
           { day: 28, venue: '광주 스타디움' },
@@ -611,6 +611,58 @@
     return brandColorMap[brand];
   }
 
+  function flattenSchedule(data){
+    const list = [];
+    data.groups.forEach(function(g){
+      if (g.banner) {
+        list.push({ kind: 'banner', day: g.banner.day, emoji: g.banner.emoji, text: g.banner.text });
+      } else {
+        g.items.forEach(function(it){
+          list.push({ kind: 'item', day: it.day, venue: it.venue });
+        });
+      }
+    });
+    list.sort(function(a, b){ return a.day - b.day; });
+    return list;
+  }
+
+  function renderScheduleEntries(entries, monthKey, todayDay){
+    let html = '';
+    let i = 0;
+    let first = true;
+    while (i < entries.length) {
+      const spacing = first ? '' : 'mt-4';
+      first = false;
+      if (entries[i].kind === 'banner') {
+        const b = entries[i];
+        html += `
+        <div class="${spacing} flex items-center justify-center gap-2 rounded-xl border border-warning/30 bg-warning/10 py-3 text-[13px] font-bold text-warning">
+          <span>${b.emoji}</span><span>${b.text}</span>
+        </div>`;
+        i++;
+      } else {
+        const rows = [];
+        while (i < entries.length && entries[i].kind === 'item') {
+          const it = entries[i];
+          const dayName = DAY_NAMES[new Date(SCHEDULE_YEAR, monthKey, it.day).getDay()];
+          const accent = accentForVenue(it.venue);
+          const mapUrl = 'https://map.naver.com/p/search/' + encodeURIComponent(it.venue);
+          const isToday = todayDay !== null && it.day === todayDay;
+          rows.push(`
+          <div class="flex items-center gap-3">
+            <span class="shrink-0 rounded-lg border ${accent.border} ${accent.bg} px-2.5 py-1.5 text-center text-[12px] font-bold ${accent.text}">${monthKey + 1}/${it.day}<span class="ml-1 font-normal text-muted-foreground">(${dayName})</span></span>
+            <span class="min-w-0 flex-1 truncate text-[13.5px] text-foreground/85">${it.venue}</span>
+            ${isToday ? '<span class="shrink-0 rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-bold text-success">오늘</span>' : ''}
+            <a href="${mapUrl}" target="_blank" rel="noopener" class="shrink-0 rounded-full border border-border px-2.5 py-1 text-[11px] font-semibold text-muted-foreground transition-colors hover:border-neon-purple/50 hover:text-neon-purple">📍 위치</a>
+          </div>`);
+          i++;
+        }
+        html += `<div class="${spacing} flex flex-col gap-2.5">${rows.join('<div class="my-2 h-px bg-white/5"></div>')}</div>`;
+      }
+    }
+    return html;
+  }
+
   function renderSchedule(){
     const monthKey = SCHEDULE_MONTH_KEYS[scheduleMonthIndex];
     const data = SCHEDULE_DATA[monthKey];
@@ -623,27 +675,34 @@
     nextBtn.disabled = scheduleMonthIndex >= SCHEDULE_MONTH_KEYS.length - 1;
     nextBtn.textContent = scheduleMonthIndex >= SCHEDULE_MONTH_KEYS.length - 1 ? '다음달 ▶' : (SCHEDULE_MONTH_KEYS[scheduleMonthIndex + 1] + 1) + '월 ▶';
 
-    el.innerHTML = data.groups.map(function(g, gi){
-      const spacing = gi > 0 ? 'mt-4' : '';
-      if (g.banner) {
-        return `
-        <div class="${spacing} flex items-center justify-center gap-2 rounded-xl border border-warning/30 bg-warning/10 py-3 text-[13px] font-bold text-warning">
-          <span>${g.banner.emoji}</span><span>${g.banner.text}</span>
-        </div>`;
-      }
-      const rows = g.items.map(function(it){
-        const dayName = DAY_NAMES[new Date(SCHEDULE_YEAR, monthKey, it.day).getDay()];
-        const accent = accentForVenue(it.venue);
-        const mapUrl = 'https://map.naver.com/p/search/' + encodeURIComponent(it.venue);
-        return `
-        <div class="flex items-center gap-3">
-          <span class="shrink-0 rounded-lg border ${accent.border} ${accent.bg} px-2.5 py-1.5 text-center text-[12px] font-bold ${accent.text}">${monthKey + 1}/${it.day}<span class="ml-1 font-normal text-muted-foreground">(${dayName})</span></span>
-          <span class="min-w-0 flex-1 truncate text-[13.5px] text-foreground/85">${it.venue}</span>
-          <a href="${mapUrl}" target="_blank" rel="noopener" class="shrink-0 rounded-full border border-border px-2.5 py-1 text-[11px] font-semibold text-muted-foreground transition-colors hover:border-neon-purple/50 hover:text-neon-purple">📍 위치</a>
-        </div>`;
-      }).join('<div class="my-2 h-px bg-white/5"></div>');
-      return `<div class="${spacing} flex flex-col gap-2.5">${rows}</div>`;
-    }).join('');
+    const flat = flattenSchedule(data);
+    const now = new Date();
+    const isCurrentMonth = now.getFullYear() === SCHEDULE_YEAR && now.getMonth() === monthKey;
+    const isPastMonth = (SCHEDULE_YEAR < now.getFullYear()) || (SCHEDULE_YEAR === now.getFullYear() && monthKey < now.getMonth());
+
+    let upcoming = flat, past = [], todayDay = null;
+    if (isCurrentMonth) {
+      todayDay = now.getDate();
+      upcoming = flat.filter(function(e){ return e.day >= todayDay; });
+      past = flat.filter(function(e){ return e.day < todayDay; });
+    } else if (isPastMonth) {
+      upcoming = [];
+      past = flat;
+    }
+
+    let html = renderScheduleEntries(upcoming, monthKey, todayDay);
+    if (past.length) {
+      html += `
+      <div class="mt-6 mb-3 flex items-center gap-2">
+        <span class="text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">완료된 일정</span>
+        <div class="h-px flex-1 bg-white/10"></div>
+      </div>
+      <div class="opacity-55">${renderScheduleEntries(past, monthKey, null)}</div>`;
+    }
+    if (!upcoming.length && !past.length) {
+      html = '<p class="py-6 text-center text-xs text-muted-foreground">등록된 일정이 없어요.</p>';
+    }
+    el.innerHTML = html;
   }
 
   window.scheduleGoto = function(dir){
