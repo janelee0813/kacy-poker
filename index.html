@@ -1137,18 +1137,21 @@
     return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
   }
 
+  // 56수딧(65s) 이상 강도로 판단되는 수딧 핸드만 모아둔 풀 - 매일 이 안에서만 뽑음
+  const HAND_POOL = [
+    ['A','K'],['A','Q'],['A','J'],['A','10'],['A','9'],['A','8'],['A','7'],['A','6'],['A','5'],['A','4'],['A','3'],['A','2'],
+    ['K','Q'],['K','J'],['K','10'],['Q','J'],['Q','10'],['J','10'],
+    ['10','9'],['9','8'],['8','7'],['7','6'],['6','5'],
+    ['K','9'],['Q','9'],['J','9']
+  ];
+  const HAND_SUITS = ['♠','♥','♦','♣'];
+
   function todayHand(){
     const key = handDayKey();
     const rand = seededRandom('kacy-hand-' + key);
-    const ranks = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
-    const suits = ['♠','♥','♦','♣'];
-    const deck = [];
-    suits.forEach(function(s){ ranks.forEach(function(r){ deck.push({ rank: r, suit: s }); }); });
-    for (let i = deck.length - 1; i > 0; i--) {
-      const j = Math.floor(rand() * (i + 1));
-      const tmp = deck[i]; deck[i] = deck[j]; deck[j] = tmp;
-    }
-    return { key: key, cards: [deck[0], deck[1]] };
+    const pair = HAND_POOL[Math.floor(rand() * HAND_POOL.length)];
+    const suit = HAND_SUITS[Math.floor(rand() * HAND_SUITS.length)];
+    return { key: key, cards: [{ rank: pair[0], suit: suit }, { rank: pair[1], suit: suit }] };
   }
 
   function renderHandCard(card, delay){
