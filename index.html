@@ -266,10 +266,7 @@
 <!-- 관리자 페이지 -->
 <div id="page-admin" class="hidden">
   <section class="px-5 pt-4 pb-16 sm:pt-5 sm:pb-20">
-    <div class="relative mx-auto max-w-screen-sm pt-9 md:max-w-2xl lg:max-w-3xl">
-      <button onclick="shareCurrentUrl(this)" class="absolute right-0 top-0 z-10 flex h-7 w-7 items-center justify-center rounded-full border border-border bg-surface/80 text-muted-foreground transition-colors hover:border-neon-purple/50 hover:text-neon-purple" title="URL 복사" aria-label="URL 복사">
-        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-      </button>
+    <div class="mx-auto max-w-screen-sm md:max-w-2xl lg:max-w-3xl">
       <div class="mb-6">
         <h2 class="text-2xl font-extrabold">🔒 관리자</h2>
         <p class="mt-1.5 text-xs text-muted-foreground">포인트 적립 관리</p>
@@ -615,6 +612,13 @@
     { bg: 'bg-neon-pink/12', border: 'border-neon-pink/40', text: 'text-neon-pink' },
     { bg: 'bg-neon-blue/12', border: 'border-neon-blue/40', text: 'text-neon-blue' },
   ];
+  // 참여자 배지 색상 - 전부 보라색 계열이되 사람마다 살짝씩 다르게
+  const ATTENDEE_GRADIENTS = [
+    'bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue',
+    'bg-gradient-to-r from-neon-purple to-neon-blue',
+    'bg-gradient-to-br from-neon-purple to-neon-pink',
+    'bg-gradient-to-r from-neon-blue to-neon-purple',
+  ];
   const brandColorMap = {};
   function accentForVenue(venue){
     const brand = VENUE_BRANDS.find(function(b){ return venue.indexOf(b) !== -1; }) || venue;
@@ -663,10 +667,8 @@
           const isToday = todayDay !== null && it.day === todayDay;
           const attendees = (rsvpMap && rsvpMap[it.day]) || [];
           const attendeePills = ['케이시'].concat(attendees).map(function(n, idx){
-            const hostClass = idx === 0
-              ? 'bg-gradient-to-r from-warning to-neon-pink text-background'
-              : 'bg-gradient-to-r from-neon-pink to-neon-purple text-background';
-            return `<span class="rounded-full ${hostClass} px-2.5 py-0.5 text-[10px] font-bold">${escapeHtml(n)}</span>`;
+            const grad = ATTENDEE_GRADIENTS[idx % ATTENDEE_GRADIENTS.length];
+            return `<span class="rounded-full ${grad} px-2.5 py-0.5 text-[10px] font-bold text-background">${escapeHtml(n)}</span>`;
           }).join('');
           const rsvpButton = allowRsvp
             ? `<button onclick="rsvpOpenModal(${monthKey}, ${it.day})" class="shrink-0 rounded-full border border-neon-pink/40 bg-neon-pink/10 px-2.5 py-1 text-[10.5px] font-semibold text-neon-pink transition-colors hover:bg-neon-pink/20">+ 참여</button>`
