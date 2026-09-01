@@ -213,7 +213,7 @@
 <section class="px-5 pb-16 sm:pb-20">
   <div class="mx-auto max-w-screen-sm md:max-w-2xl lg:max-w-3xl">
     <div class="mb-6 text-center">
-      <h2 class="text-2xl font-extrabold">🏆 8월 케톡방 랭킹 🏆</h2>
+      <h2 class="text-2xl font-extrabold">🏆 <span id="rank-month-label">8월</span> 케톡방 랭킹 🏆</h2>
       <p class="mt-1.5 text-xs text-muted-foreground">누적 포인트 기준 순위예요</p>
     </div>
     <div id="rank-list" class="neon-card p-5 sm:p-6"></div>
@@ -475,6 +475,19 @@
   }
 
   // ===== 최근 적립 / 랭킹 (Supabase 연동) =====
+  function updateRankMonthLabel(){
+    const el = document.getElementById('rank-month-label');
+    if (!el) return;
+    const now = new Date();
+    let y = now.getFullYear();
+    let m = now.getMonth(); // 0-indexed
+    if (now.getDate() < 2) { // 매달 2일부터 해당월 랭킹으로 표시
+      m -= 1;
+      if (m < 0) { m = 11; y -= 1; }
+    }
+    el.textContent = (m + 1) + '월';
+  }
+
   function renderRecent(data){
     const el = document.getElementById('recent-list');
     if (!el) return;
@@ -627,7 +640,20 @@
     },
   };
   const SCHEDULE_MONTH_KEYS = Object.keys(SCHEDULE_DATA).map(Number).sort(function(a, b){ return a - b; });
-  let scheduleMonthIndex = 0; // SCHEDULE_MONTH_KEYS 안에서의 현재 위치 (기본: 8월)
+  function defaultScheduleMonthIndex(){
+    const now = new Date();
+    if (now.getFullYear() !== SCHEDULE_YEAR) return SCHEDULE_MONTH_KEYS.length - 1;
+    const nowMonthKey = now.getMonth();
+    let idx = SCHEDULE_MONTH_KEYS.indexOf(nowMonthKey);
+    if (idx !== -1) return idx;
+    // 데이터가 아직 없는 달이면, 그 이전 달 중 가장 최근 것을 보여줌
+    idx = 0;
+    for (let i = 0; i < SCHEDULE_MONTH_KEYS.length; i++) {
+      if (SCHEDULE_MONTH_KEYS[i] <= nowMonthKey) idx = i;
+    }
+    return idx;
+  }
+  let scheduleMonthIndex = defaultScheduleMonthIndex(); // 오늘 날짜 기준 자동 선택
 
   // 같은 브랜드(프렌차이즈)는 같은 색으로 묶어서 표시
   const VENUE_BRANDS = ['러너펍', '제이블러프', 'KMGM', '케이스타', '치즈홀덤펍', '스타디움'];
@@ -1356,6 +1382,7 @@
 
   // ===== 초기 로드 =====
   window.showPage(pageFromPath(window.location.pathname), { skipPush: true, skipScroll: true });
+  updateRankMonthLabel();
   loadPointsData();
   renderSchedule();
   loadVisitorCount();
