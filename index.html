@@ -138,6 +138,7 @@
     <div class="flex items-center justify-between gap-1.5">
       <div class="flex gap-1.5">
         <button onclick="showPage('kacy')" id="btn-kacy" class="shrink-0 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-2 py-1.5 text-[11.5px] md:px-3.5 md:py-2 md:text-sm font-semibold text-background transition-all">케이시포커</button>
+        <button onclick="showPage('total')" id="btn-total" class="shrink-0 rounded-full border border-border px-2 py-1.5 text-[11.5px] md:px-3.5 md:py-2 md:text-sm font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple">누적랭킹</button>
         <button onclick="showPage('schedule')" id="btn-schedule" class="shrink-0 rounded-full border border-border px-2 py-1.5 text-[11.5px] md:px-3.5 md:py-2 md:text-sm font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple">스케줄</button>
         <button onclick="showPage('beta')" id="btn-beta" class="shrink-0 rounded-full border border-border px-2 py-1.5 text-[11.5px] md:px-3.5 md:py-2 md:text-sm font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple">오늘의 핸드</button>
       </div>
@@ -249,6 +250,22 @@
         </div>
       </div>
       <div id="schedule-list" class="neon-card p-4 sm:p-5"></div>
+    </div>
+  </section>
+</div>
+
+<!-- 누적랭킹 페이지 -->
+<div id="page-total" class="hidden">
+  <section class="px-5 pt-4 pb-16 sm:pt-5 sm:pb-20">
+    <div class="relative mx-auto max-w-screen-sm pt-9 md:max-w-2xl lg:max-w-3xl">
+      <button onclick="shareCurrentUrl(this)" class="absolute right-0 top-0 z-10 flex h-7 w-7 items-center justify-center rounded-full border border-border bg-surface/80 text-muted-foreground transition-colors hover:border-neon-purple/50 hover:text-neon-purple" title="URL 복사" aria-label="URL 복사">
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      </button>
+      <div class="mb-6 text-center">
+        <h2 class="text-2xl font-extrabold">👑 누적랭킹 👑</h2>
+        <p class="mt-1.5 text-xs text-muted-foreground">2026년 8월부터 지금까지 쌓은 전체 포인트 순위예요</p>
+      </div>
+      <div id="total-rank-list" class="neon-card p-5 sm:p-6"></div>
     </div>
   </section>
 </div>
@@ -418,8 +435,8 @@
   // ===== 네비게이션 =====
   const NAV_ACTIVE = 'shrink-0 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-2 py-1.5 text-[11.5px] md:px-3.5 md:py-2 md:text-sm font-semibold text-background transition-all';
   const NAV_INACTIVE = 'shrink-0 rounded-full border border-border px-2 py-1.5 text-[11.5px] md:px-3.5 md:py-2 md:text-sm font-medium text-muted-foreground transition-all hover:border-neon-purple/50 hover:text-neon-purple';
-  const PAGES = ['kacy', 'schedule', 'beta', 'admin'];
-  const PAGE_PATHS = { kacy: '/', schedule: '/schedule', beta: '/today-hand', admin: '/admin' };
+  const PAGES = ['kacy', 'total', 'schedule', 'beta', 'admin'];
+  const PAGE_PATHS = { kacy: '/', total: '/total-rank', schedule: '/schedule', beta: '/today-hand', admin: '/admin' };
 
   function pageFromPath(pathname){
     const clean = pathname.replace(/\/+$/, '') || '/';
@@ -547,8 +564,8 @@
     });
   }
 
-  function renderRank(data){
-    const el = document.getElementById('rank-list');
+  function renderRank(data, listId){
+    const el = document.getElementById(listId || 'rank-list');
     if (!el) return;
     if (!data.length) {
       el.innerHTML = '<p class="py-2 text-center text-xs text-muted-foreground">아직 집계된 순위가 없어요.</p>';
@@ -599,6 +616,23 @@
     }
   }
 
+  const TOTAL_RANK_START_DATE = '2026-08-01'; // 누적랭킹 집계 시작일 (8월부터 연말까지 누적)
+
+  async function loadTotalRankData(){
+    const el = document.getElementById('total-rank-list');
+    if (el) el.innerHTML = '<p class="py-2 text-center text-xs text-muted-foreground">불러오는 중...</p>';
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/points_log?select=name,delta&earned_date=gte.' + TOTAL_RANK_START_DATE, { headers: sbHeaders() });
+      const rows = await res.json();
+      const totals = {};
+      rows.forEach(function(r){ totals[r.name] = (totals[r.name] || 0) + r.delta; });
+      const data = Object.keys(totals).map(function(name){ return { name: name, score: totals[name] }; }).sort(function(a, b){ return b.score - a.score; });
+      renderRank(data, 'total-rank-list');
+    } catch (e) {
+      console.error('누적랭킹 데이터를 불러오지 못했어요', e);
+    }
+  }
+
   async function loadPointsData(){
     try {
       const recentRes = await fetch(SUPABASE_URL + '/rest/v1/points_log?select=name,delta,venue,earned_date&order=created_at.desc&limit=5', { headers: sbHeaders() });
@@ -607,6 +641,7 @@
       console.error('최근 적립 데이터를 불러오지 못했어요', e);
     }
     loadRankData();
+    loadTotalRankData();
   }
 
   // ===== 스케줄 =====
