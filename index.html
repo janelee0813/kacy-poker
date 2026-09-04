@@ -564,7 +564,7 @@
     });
   }
 
-  function renderRank(data, listId){
+  function renderRank(data, listId, collapseAt){
     const el = document.getElementById(listId || 'rank-list');
     if (!el) return;
     if (!data.length) {
@@ -573,7 +573,7 @@
     }
     const max = Math.max(...data.map(d => d.score));
     const medals = ['🥇','🥈','🥉'];
-    el.innerHTML = data.map((d, i) => {
+    const rowHtml = function(d, i){
       const pct = Math.max(4, Math.round(d.score / max * 100));
       const rankLabel = medals[i] || (i + 1);
       return `
@@ -589,12 +589,36 @@
           <div class="rank-bar h-full rounded-full bg-gradient-to-r from-neon-purple to-neon-pink shadow-[0_0_8px_rgba(181,102,255,0.4)]" data-pct="${pct}" style="width:0%;transition:width .9s cubic-bezier(.22,1,.36,1) ${i * 55}ms"></div>
         </div>
       </div>`;
-    }).join('');
+    };
+    const hasMore = collapseAt && data.length > collapseAt;
+    const visible = hasMore ? data.slice(0, collapseAt) : data;
+    const rest = hasMore ? data.slice(collapseAt) : [];
+    let html = visible.map(rowHtml).join('');
+    if (hasMore) {
+      html += `<div id="${listId}-more" class="hidden">${rest.map((d, i) => rowHtml(d, i + collapseAt)).join('')}</div>`;
+      html += `<button onclick="toggleRankMore('${listId}', this)" class="mt-1 w-full rounded-lg border border-dashed border-border py-2 text-xs font-semibold text-muted-foreground transition-colors hover:border-neon-purple/50 hover:text-neon-purple">${collapseAt}위 아래 ${rest.length}명 더보기 ▼</button>`;
+    }
+    el.innerHTML = html;
     revealOnScroll(el, function(){
       el.querySelectorAll('.rank-bar').forEach(bar => { bar.style.width = bar.dataset.pct + '%'; });
       el.querySelectorAll('.rank-score').forEach(scoreEl => animateCount(scoreEl, parseInt(scoreEl.dataset.score, 10)));
     });
   }
+
+  window.toggleRankMore = function(listId, btn){
+    const moreEl = document.getElementById(listId + '-more');
+    if (!moreEl) return;
+    const collapsing = !moreEl.classList.contains('hidden');
+    if (collapsing) {
+      moreEl.classList.add('hidden');
+      btn.textContent = btn.textContent.replace('접기 ▲', '더보기 ▼');
+    } else {
+      moreEl.classList.remove('hidden');
+      moreEl.querySelectorAll('.rank-bar').forEach(bar => { bar.style.width = bar.dataset.pct + '%'; });
+      moreEl.querySelectorAll('.rank-score').forEach(scoreEl => animateCount(scoreEl, parseInt(scoreEl.dataset.score, 10)));
+      btn.textContent = btn.textContent.replace('더보기 ▼', '접기 ▲');
+    }
+  };
 
   async function loadRankData(){
     const el = document.getElementById('rank-list');
@@ -627,7 +651,7 @@
       const totals = {};
       rows.forEach(function(r){ totals[r.name] = (totals[r.name] || 0) + r.delta; });
       const data = Object.keys(totals).map(function(name){ return { name: name, score: totals[name] }; }).sort(function(a, b){ return b.score - a.score; });
-      renderRank(data, 'total-rank-list');
+      renderRank(data, 'total-rank-list', 10);
     } catch (e) {
       console.error('누적랭킹 데이터를 불러오지 못했어요', e);
     }
