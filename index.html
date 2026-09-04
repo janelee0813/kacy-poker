@@ -99,6 +99,16 @@
     50%{ box-shadow: 0 0 14px 3px rgba(181,102,255,0.6); border-color: rgba(181,102,255,0.75); }
   }
   .btn-border-glow{ animation: borderGlow 1.6s ease-in-out infinite; }
+  @keyframes rankGoldShimmer{
+    0%,100%{ background-position: 0% 50%; box-shadow: 0 0 10px 1px rgba(255,196,64,0.55), 0 0 24px 5px rgba(255,150,20,0.4); }
+    50%{ background-position: 100% 50%; box-shadow: 0 0 20px 4px rgba(255,214,120,0.9), 0 0 40px 10px rgba(255,150,20,0.7); }
+  }
+  .rank-bar-gold{
+    background: linear-gradient(90deg, #ffb347, #fff2c2, #ffd76a, #fff2c2, #ffb347);
+    background-size: 300% auto;
+    animation: rankGoldShimmer 2.2s ease-in-out infinite;
+  }
+  .rank-score-gold{ color:#ffd76a; text-shadow: 0 0 10px rgba(255,196,64,0.6); }
   .grid-bg{
     background-image:
       radial-gradient(circle at 20% 0%, rgba(181,102,255,0.18), transparent 45%),
@@ -576,6 +586,9 @@
     const rowHtml = function(d, i){
       const pct = Math.max(4, Math.round(d.score / max * 100));
       const rankLabel = medals[i] || (i + 1);
+      const isFirst = i === 0;
+      const barClass = isFirst ? 'rank-bar h-full rounded-full rank-bar-gold' : 'rank-bar h-full rounded-full bg-gradient-to-r from-neon-purple to-neon-pink shadow-[0_0_8px_rgba(181,102,255,0.4)]';
+      const scoreClass = isFirst ? 'rank-score shrink-0 text-xs font-bold rank-score-gold' : 'rank-score shrink-0 text-xs font-bold text-neon-purple';
       return `
       <div class="mb-4 last:mb-0">
         <div class="mb-1.5 flex items-center justify-between gap-2">
@@ -583,10 +596,10 @@
             <span class="w-5 shrink-0 text-center text-xs text-muted-foreground">${rankLabel}</span>
             <span class="truncate">${escapeHtml(d.name)}</span>
           </span>
-          <span class="rank-score shrink-0 text-xs font-bold text-neon-purple" data-score="${d.score}">0점</span>
+          <span class="${scoreClass}" data-score="${d.score}">0점</span>
         </div>
         <div class="h-2.5 rounded-full bg-white/5 overflow-hidden">
-          <div class="rank-bar h-full rounded-full bg-gradient-to-r from-neon-purple to-neon-pink shadow-[0_0_8px_rgba(181,102,255,0.4)]" data-pct="${pct}" style="width:0%;transition:width .9s cubic-bezier(.22,1,.36,1) ${i * 55}ms"></div>
+          <div class="${barClass}" data-pct="${pct}" style="width:0%;transition:width .9s cubic-bezier(.22,1,.36,1) ${i * 55}ms"></div>
         </div>
       </div>`;
     };
