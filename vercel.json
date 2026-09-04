@@ -1,5 +1,6 @@
 {
   "rewrites": [
+    { "source": "/total-rank", "destination": "/index.html" },
     { "source": "/schedule", "destination": "/index.html" },
     { "source": "/today-hand", "destination": "/index.html" },
     { "source": "/admin", "destination": "/index.html" }
