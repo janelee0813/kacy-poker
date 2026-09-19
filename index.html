@@ -931,7 +931,9 @@
     if (!el || !data) return;
 
     document.getElementById('schedule-title').textContent = '🗓️ ' + (monthKey + 1) + '월 일정';
-    document.getElementById('schedule-prev-btn').disabled = scheduleMonthIndex <= 0;
+    const prevBtn = document.getElementById('schedule-prev-btn');
+    prevBtn.disabled = scheduleMonthIndex <= 0;
+    prevBtn.textContent = scheduleMonthIndex <= 0 ? '◀ 이전달' : '◀ ' + (SCHEDULE_MONTH_KEYS[scheduleMonthIndex - 1] + 1) + '월';
     const nextBtn = document.getElementById('schedule-next-btn');
     nextBtn.disabled = scheduleMonthIndex >= SCHEDULE_MONTH_KEYS.length - 1;
     nextBtn.textContent = scheduleMonthIndex >= SCHEDULE_MONTH_KEYS.length - 1 ? '다음달 ▶' : (SCHEDULE_MONTH_KEYS[scheduleMonthIndex + 1] + 1) + '월 ▶';
