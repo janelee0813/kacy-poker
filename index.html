@@ -260,6 +260,13 @@
         </div>
       </div>
       <div id="schedule-list" class="neon-card p-4 sm:p-5"></div>
+      <div id="tmap-help" role="status" class="hidden mt-3 rounded-xl border border-border bg-surface p-3 text-xs leading-relaxed text-muted-foreground">
+        <p id="tmap-help-message"></p>
+        <div class="mt-2 flex flex-wrap gap-3">
+          <a href="https://apps.apple.com/kr/app/id431589174" target="_blank" rel="noopener" class="text-neon-blue underline">아이폰 티맵 설치</a>
+          <a href="https://play.google.com/store/apps/details?id=com.skt.tmap.ku" target="_blank" rel="noopener" class="text-neon-blue underline">안드로이드 티맵 설치</a>
+        </div>
+      </div>
     </div>
   </section>
 </div>
@@ -394,6 +401,7 @@
   </div>
 </div>
 
+<script src="/venue-locations.js"></script>
 <script>
 (function(){
   const SUPABASE_URL = 'https://hyrqpfivceyxvwbqqznj.supabase.co';
@@ -870,6 +878,10 @@
           const dayName = DAY_NAMES[new Date(SCHEDULE_YEAR, monthKey, it.day).getDay()];
           const accent = accentForVenue(it.venue);
           const mapUrl = 'https://map.naver.com/p/search/' + encodeURIComponent(it.venue);
+          const tmapUrl = getTmapUrl(it.venue);
+          const tmapButton = tmapUrl
+            ? `<a href="${tmapUrl}" onclick="openTmap(event)" aria-label="${escapeHtml(it.venue)} 티맵 길찾기" title="${escapeHtml(getVenueLocation(it.venue).address)}" class="shrink-0 rounded-full border border-neon-blue/40 bg-neon-blue/10 px-2.5 py-1.5 text-[11px] font-semibold text-neon-blue transition-colors hover:bg-neon-blue/20">티맵 길찾기</a>`
+            : '';
           const isToday = todayDay !== null && it.day === todayDay;
           const attendees = (rsvpMap && rsvpMap[it.day]) || [];
           const attendeePills = ['케이시'].concat(attendees).map(function(n, idx){
@@ -881,11 +893,14 @@
             : '';
           rows.push(`
           <div>
-            <div class="flex items-center gap-3">
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
               <span class="shrink-0 rounded-lg border ${accent.border} ${accent.bg} px-2.5 py-1.5 text-center text-[12px] font-bold ${accent.text}">${monthKey + 1}/${it.day}<span class="ml-1 font-normal text-muted-foreground">(${dayName})</span></span>
-              <span class="min-w-0 flex-1 truncate text-[13.5px] text-foreground/85">${it.venue}</span>
+              <span class="min-w-0 flex-1 break-words text-[13.5px] text-foreground/85">${it.venue}</span>
               ${isToday ? '<span class="shrink-0 rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-bold text-success">오늘</span>' : ''}
-              <a href="${mapUrl}" target="_blank" rel="noopener" class="shrink-0 rounded-full border border-border px-2.5 py-1 text-[11px] font-semibold text-muted-foreground transition-colors hover:border-neon-purple/50 hover:text-neon-purple">📍 위치</a>
+              <div class="flex w-full shrink-0 justify-end gap-1.5 sm:w-auto">
+                <a href="${mapUrl}" target="_blank" rel="noopener" class="shrink-0 rounded-full border border-border px-2.5 py-1.5 text-[11px] font-semibold text-muted-foreground transition-colors hover:border-neon-purple/50 hover:text-neon-purple">📍 위치</a>
+                ${tmapButton}
+              </div>
             </div>
             <div class="mt-1.5 flex flex-wrap items-center gap-1.5">${attendeePills}${rsvpButton}</div>
           </div>`);
