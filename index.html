@@ -760,6 +760,41 @@
       ]
     },
   };
+  SCHEDULE_DATA[9] = { // 10월 (0-indexed)
+    groups: [
+      { items: [
+        { day: 2, venue: '홍대 러너펍' },
+        { day: 3, venue: '수원 인계 러너펍' },
+      ]},
+      { items: [
+        { day: 5, venue: '수원역 러너펍' },
+        { day: 6, venue: '수원 인계 치즈펍' },
+        { day: 7, venue: '언주 제이블러프' },
+        { day: 8, venue: '노원 러너펍' },
+        { day: 9, venue: '홍대 러너펍' },
+        { day: 10, venue: '목동 KMGM' },
+        { day: 11, venue: '방이 러너펍' },
+      ]},
+      { items: [
+        { day: 13, venue: '별내 러너펍' },
+        { day: 14, venue: '언주 제이블러프' },
+        { day: 17, venue: '역삼 러너펍' },
+        { day: 18, venue: '신사 빅스택' },
+      ]},
+      { items: [
+        { day: 20, venue: '영등포 러너펍' },
+        { day: 21, venue: '언주 제이블러프' },
+      ]},
+      { banner: { emoji: '🏆', text: '10/23~25 대전으로 가요🙇🏻‍♀️ 헤즈업 HGP 대회 🏆', day: 23 } },
+      { items: [
+        { day: 27, venue: '홍대 러너펍' },
+        { day: 28, venue: '언주 제이블러프' },
+        { day: 29, venue: '인계 러너펍' },
+        { day: 30, venue: '역삼 러너펍' },
+        { day: 31, venue: '목동 KMGM' },
+      ]},
+    ]
+  };
   const SCHEDULE_MONTH_KEYS = Object.keys(SCHEDULE_DATA).map(Number).sort(function(a, b){ return a - b; });
   function defaultScheduleMonthIndex(){
     const now = new Date();
