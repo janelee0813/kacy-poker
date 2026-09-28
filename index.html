@@ -147,7 +147,19 @@
   .schedule-venue-line-long { font-size:8px; }
   .schedule-event-time { display:block; margin-bottom:2px; font-size:9px; color:#85d5ff; }
   @media(min-width:640px) { .schedule-venue-line-long { font-size:11px; } }
-  .schedule-event-banner { background:rgba(255,181,71,.12); color:#ffcc80; }
+  .schedule-color-runner { --calendar-bg:#ffd5e5; --calendar-ink:#bd0053; --calendar-dot:#ff5997; }
+  .schedule-color-jbluff { --calendar-bg:#e4d5ff; --calendar-ink:#6420b5; --calendar-dot:#b580ff; }
+  .schedule-color-cheese { --calendar-bg:#ffe6b9; --calendar-ink:#a34400; --calendar-dot:#ffad43; }
+  .schedule-color-kmgm { --calendar-bg:#c7e3ff; --calendar-ink:#0049a5; --calendar-dot:#61adff; }
+  .schedule-color-bigstack { --calendar-bg:#c7f5d4; --calendar-ink:#076738; --calendar-dot:#5bde8b; }
+  .schedule-color-event { --calendar-bg:#ffe3a3; --calendar-ink:#77500a; --calendar-dot:#ffd064; }
+  .schedule-color-other { --calendar-bg:#e2e5ed; --calendar-ink:#3d465b; --calendar-dot:#b2bacd; }
+  .schedule-event-venue, .schedule-event-banner { background:var(--calendar-bg,#e2e5ed); color:var(--calendar-ink,#3d465b); font-weight:600; }
+  .schedule-event-time { color:inherit; }
+  .schedule-legend { display:flex; flex-wrap:wrap; justify-content:center; gap:8px 14px; margin-top:14px; padding:12px 4px; border-top:1px solid rgba(140,110,200,.22); }
+  .schedule-legend-item { display:inline-flex; align-items:center; gap:5px; font-size:11px; color:#d8d0e7; }
+  .schedule-legend-dot { width:8px; height:8px; flex-shrink:0; border-radius:50%; background:var(--calendar-dot); }
+
   .schedule-sunday { color:#ff8ebc; }
   .schedule-saturday { color:#85d5ff; }
   @media(min-width:640px) {
@@ -968,6 +980,22 @@
     return entries.filter(function(entry){ return day >= entry.day && day <= (entry.endDay || entry.day); });
   }
 
+  const CALENDAR_BRANDS = [
+    {key:'runner',name:'러너펍',pattern:/러너펍/},
+    {key:'jbluff',name:'제이블러프',pattern:/제이블러프/},
+    {key:'cheese',name:'치즈펍',pattern:/치즈/},
+    {key:'kmgm',name:'KMGM',pattern:/KMGM/i},
+    {key:'bigstack',name:'빅스택',pattern:/빅스택/},
+    {key:'event',name:'대회 · 휴가'},
+    {key:'other',name:'기타 매장'}
+  ];
+  function calendarBrand(entry){
+    if(entry.kind==='banner') return 'event';
+    const name=entry.venue+' '+getCalendarVenue(entry.venue).name;
+    const brand=CALENDAR_BRANDS.find(function(b){return b.pattern && b.pattern.test(name);});
+    return brand ? brand.key : 'other';
+  }
+
   function renderScheduleCalendar(entries, monthKey, todayDay){
     const firstWeekday = new Date(SCHEDULE_YEAR, monthKey, 1).getDay();
     const daysInMonth = new Date(SCHEDULE_YEAR, monthKey + 1, 0).getDate();
@@ -983,15 +1011,16 @@
       cells += `<button type="button" class="schedule-day" onclick="scheduleSelectDay(${day})" aria-label="${escapeHtml(label)}" aria-pressed="${day === scheduleSelectedDay}" aria-controls="schedule-day-detail" ${day === todayDay ? 'aria-current="date"' : ''}>
         <span class="schedule-day-number ${weekday === 0 ? 'schedule-sunday' : weekday === 6 ? 'schedule-saturday' : ''}">${day}</span>
         ${dayEntries.map(function(entry){
-          if (entry.kind === 'banner') return `<span class="schedule-event schedule-event-banner">${escapeHtml((entry.time ? entry.time.slice(0,5) + ' ' : '') + entry.emoji + ' ' + (entry.calendarText || entry.text))}</span>`;
+          if (entry.kind === 'banner') return `<span class="schedule-event schedule-event-banner schedule-color-event">${escapeHtml((entry.time ? entry.time.slice(0,5) + ' ' : '') + entry.emoji + ' ' + (entry.calendarText || entry.text))}</span>`;
           const venue = getCalendarVenue(entry.venue);
-          return `<span class="schedule-event schedule-event-venue" title="${escapeHtml(venue.name)}">${entry.time ? `<span class="schedule-event-time">${escapeHtml(entry.time.slice(0,5))}</span>` : ''}${venue.lines.map(function(line){return `<span class="schedule-venue-line${Array.from(line).length > 4 ? ' schedule-venue-line-long' : ''}">${escapeHtml(line)}</span>`;}).join('')}</span>`;
+          return `<span class="schedule-event schedule-event-venue schedule-color-${calendarBrand(entry)}" title="${escapeHtml(venue.name)}">${entry.time ? `<span class="schedule-event-time">${escapeHtml(entry.time.slice(0,5))}</span>` : ''}${venue.lines.map(function(line){return `<span class="schedule-venue-line${Array.from(line).length > 4 ? ' schedule-venue-line-long' : ''}">${escapeHtml(line)}</span>`;}).join('')}</span>`;
         }).join('')}
       </button>`;
     }
     const trailing = (7 - (firstWeekday + daysInMonth) % 7) % 7;
     for (let blank = 0; blank < trailing; blank++) cells += '<div aria-hidden="true"></div>';
     return `<p class="mb-2 px-1 text-xs text-muted-foreground">날짜를 누르면 상세 일정을 볼 수 있어요.</p><div class="schedule-calendar-grid">${cells}</div>
+      <div class="schedule-legend" role="list" aria-label="매장별 색상 안내">${CALENDAR_BRANDS.filter(function(brand){return brand.key!=='other' || entries.some(function(entry){return calendarBrand(entry)==='other';});}).map(function(brand){return `<span role="listitem" class="schedule-legend-item schedule-color-${brand.key}"><span class="schedule-legend-dot" aria-hidden="true"></span>${brand.name}</span>`;}).join('')}</div>
       <div id="schedule-day-detail" class="mt-4 rounded-xl border border-border bg-surface/60 p-3 sm:p-4" aria-live="polite"></div>`;
   }
 
