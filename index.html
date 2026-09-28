@@ -150,6 +150,26 @@
     .schedule-day { min-height:110px; padding:8px; }
     .schedule-event { font-size:12px; padding:4px 5px; }
   }
+  .admin-layout { display:grid; grid-template-columns:190px minmax(0,1fr); gap:20px; align-items:start; }
+  .admin-sidebar { position:sticky; top:80px; }
+  .admin-nav { display:flex; flex-direction:column; gap:5px; }
+  .admin-nav-button { padding:12px; text-align:left; border-radius:10px; font-size:13px; color:#aaa1be; white-space:nowrap; }
+  .admin-nav-button:hover { background:rgba(181,102,255,.08); }
+  .admin-nav-button[aria-current="page"] { color:#e1c3ff; background:rgba(181,102,255,.18); font-weight:700; }
+  .admin-label { display:flex; flex-direction:column; gap:6px; font-size:12px; color:#c7bfd6; }
+  .admin-input { width:100%; min-width:0; border:1px solid rgba(140,110,200,.3); background:#15101f; color:#f5f1ff; padding:10px 12px; border-radius:8px; font-size:14px; outline:none; }
+  .admin-input:focus { border-color:#b566ff; }
+  .admin-form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .admin-primary { background:linear-gradient(110deg,#b566ff,#ff8abc); color:#14091f; border-radius:8px; padding:10px 16px; font-size:13px; font-weight:700; }
+  .admin-secondary { border:1px solid rgba(140,110,200,.35); border-radius:8px; padding:8px 12px; font-size:12px; color:#d3c5e8; }
+  #admin-panel button:disabled { opacity:.45; cursor:wait; }
+  @media(max-width:767px) {
+    .admin-layout { grid-template-columns:minmax(0,1fr); gap:16px; }
+    .admin-sidebar { position:static; }
+    .admin-nav { flex-direction:row; overflow-x:auto; }
+    .admin-nav-button { padding:10px; }
+  }
+  @media(max-width:380px) { .admin-form-grid { grid-template-columns:1fr; } }
 </style>
 </head>
 <body class="min-h-screen bg-background text-foreground font-sans">
@@ -268,7 +288,7 @@
       </button>
       <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 id="schedule-title" class="text-2xl font-extrabold">🗓️ 8월 일정</h2>
+          <h2 id="schedule-title" class="text-2xl font-extrabold">🗓️ 방문 일정</h2>
           <p class="mt-1.5 text-xs text-muted-foreground">케이시 포커의 방문 일정이에요</p>
         </div>
         <div class="flex shrink-0 gap-1.5">
@@ -279,6 +299,7 @@
       <div class="mb-3 flex justify-end">
         <button id="schedule-view-toggle" onclick="scheduleToggleView()" aria-pressed="false" aria-controls="schedule-calendar" class="rounded-full border border-neon-purple/40 bg-neon-purple/10 px-4 py-2 text-xs font-semibold text-neon-purple transition-colors hover:bg-neon-purple/20">캘린더로 보기</button>
       </div>
+      <p id="schedule-load-message" role="status" class="mb-3 text-xs text-warning">일정을 불러오는 중이에요…</p>
       <div id="schedule-list" class="neon-card p-4 sm:p-5"></div>
       <div id="schedule-calendar" class="hidden neon-card p-2 sm:p-5" role="region" aria-label="월별 일정 캘린더"></div>
       <div id="tmap-help" role="status" class="hidden mt-3 rounded-xl border border-border bg-surface p-3 text-xs leading-relaxed text-muted-foreground">
@@ -349,10 +370,10 @@
 <!-- 관리자 페이지 -->
 <div id="page-admin" class="hidden">
   <section class="px-5 pt-4 pb-16 sm:pt-5 sm:pb-20">
-    <div class="mx-auto max-w-screen-sm md:max-w-2xl lg:max-w-3xl">
+    <div class="mx-auto max-w-6xl">
       <div class="mb-6">
         <h2 class="text-2xl font-extrabold">🔒 관리자</h2>
-        <p class="mt-1.5 text-xs text-muted-foreground">포인트 적립 관리</p>
+        <p class="mt-1.5 text-xs text-muted-foreground">일정과 매장, 포인트를 한곳에서 관리해요</p>
       </div>
 
       <div id="admin-login" class="neon-card p-6">
@@ -365,12 +386,47 @@
       </div>
 
       <div id="admin-panel" class="hidden flex-col gap-5">
-
-        <div class="flex justify-end">
-          <button onclick="adminLogout()" class="rounded-full border border-border px-3.5 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-destructive/50 hover:text-destructive">로그아웃</button>
-        </div>
-
-        <div class="neon-card p-4 sm:p-5">
+        <div class="admin-layout">
+          <aside class="admin-sidebar neon-card p-3">
+            <p class="mb-3 px-2 text-xs font-bold text-muted-foreground">관리 메뉴</p>
+            <nav aria-label="관리자 메뉴" class="admin-nav"><button type="button" data-admin-section="schedule" onclick="adminShowSection('schedule')" class="admin-nav-button">🗓️ 일정 관리</button><button type="button" data-admin-section="venues" onclick="adminShowSection('venues')" class="admin-nav-button">📍 매장 목록</button><button type="button" data-admin-section="points" onclick="adminShowSection('points')" class="admin-nav-button">✨ 포인트 적립</button><button type="button" data-admin-section="logs" onclick="adminShowSection('logs')" class="admin-nav-button">📊 적립 현황</button><button type="button" data-admin-section="rsvps" onclick="adminShowSection('rsvps')" class="admin-nav-button">🙋 참여자 관리</button><button type="button" data-admin-section="backup" onclick="adminShowSection('backup')" class="admin-nav-button">📥 데이터 백업</button></nav>
+            <button type="button" onclick="adminLogout()" class="mt-4 w-full rounded-lg border border-border px-3 py-2 text-xs text-muted-foreground">로그아웃</button>
+          </aside>
+          <div class="min-w-0">
+            <section id="admin-section-schedule" class="admin-section">
+              <div class="mb-4 flex flex-wrap items-center justify-between gap-3"><div><h3 class="text-lg font-bold">일정 관리</h3><p class="mt-1 text-xs text-muted-foreground">등록한 일정은 목록과 캘린더에 바로 반영돼요.</p></div><button type="button" onclick="adminNewSchedule()" class="admin-primary">+ 새 일정</button></div>
+              <form id="admin-schedule-form" class="neon-card p-4 sm:p-5" onsubmit="adminSaveSchedule(event)">
+                <h4 id="admin-schedule-form-title" class="mb-4 text-sm font-bold text-neon-purple">새 일정 등록</h4>
+                <fieldset id="admin-schedule-fields">
+                  <div class="admin-form-grid">
+                    <label class="admin-label">일정 종류<select id="admin-schedule-kind" class="admin-input" onchange="adminScheduleKindChanged()"><option value="visit">매장 방문</option><option value="banner">대회 · 휴가 · 기타</option></select></label>
+                    <label class="admin-label">날짜<input id="admin-schedule-date" class="admin-input" type="date" min="2000-01-01" max="2100-12-31" required></label>
+                    <label class="admin-label">시간 <span class="text-muted-foreground">(선택)</span><input id="admin-schedule-time" class="admin-input" type="time"></label>
+                    <label id="admin-schedule-end-wrap" class="admin-label hidden">종료일<input id="admin-schedule-end" class="admin-input" type="date" min="2000-01-01" max="2101-12-31"></label>
+                  </div>
+                  <div id="admin-schedule-venue-wrap" class="mt-4">
+                    <label class="admin-label">매장 검색 또는 새 매장명<input id="admin-schedule-venue" class="admin-input" type="text" maxlength="100" placeholder="예: 구리 러너펍" autocomplete="off" oninput="adminRenderVenueSuggestions()"></label>
+                    <p class="mt-1 text-[11px] text-muted-foreground">아래 매장을 선택하거나 새 이름을 입력하세요. 새 매장은 일정 저장 시 목록에 추가돼요.</p>
+                    <div id="admin-venue-suggestions" class="mt-2 flex max-h-36 flex-wrap gap-2 overflow-y-auto"></div>
+                  </div>
+                  <div id="admin-schedule-banner-wrap" class="hidden mt-4 space-y-3">
+                    <label class="admin-label">일정 제목<input id="admin-schedule-title" class="admin-input" maxlength="200" placeholder="예: 헤즈업 HGP 대회"></label>
+                    <label class="admin-label">캘린더 짧은 이름 <span class="text-muted-foreground">(선택)</span><input id="admin-schedule-short" class="admin-input" maxlength="80" placeholder="생략하면 일정 제목을 표시해요"></label>
+                    <label class="admin-label">아이콘<select id="admin-schedule-emoji" class="admin-input"><option value="🏆">🏆 대회</option><option value="🏖️">🏖️ 휴가</option><option value="🌕">🌕 명절</option><option value="📌">📌 기타</option></select></label>
+                  </div>
+                  <div class="mt-4 flex gap-2"><button id="admin-schedule-save" type="submit" class="admin-primary flex-1">일정 등록</button><button type="button" onclick="adminNewSchedule()" class="admin-secondary">초기화</button></div>
+                </fieldset>
+                <p id="admin-schedule-message" class="mt-3 text-xs" role="status"></p>
+              </form>
+              <div class="neon-card mt-4 p-4 sm:p-5"><div class="mb-4 flex flex-wrap items-center justify-between gap-2"><label class="admin-label">등록 일정<input id="admin-schedule-month" type="month" class="admin-input" onchange="adminRenderSchedules()"></label><button type="button" onclick="adminReloadSchedules()" class="admin-secondary">새로고침</button></div><div id="admin-schedule-list" class="space-y-2"></div></div>
+            </section>
+            <section id="admin-section-venues" class="admin-section hidden neon-card p-4 sm:p-5">
+              <h3 class="text-lg font-bold">매장 목록 <span id="admin-venue-count" class="text-neon-purple"></span></h3>
+              <p class="mt-1 text-xs text-muted-foreground">한 번 등록한 매장은 일정이 삭제되어도 목록에 남아요.</p>
+              <label class="admin-label mt-4">매장 검색<input id="admin-venue-search" class="admin-input" placeholder="매장명으로 검색" oninput="adminRenderVenues()"></label>
+              <div id="admin-venue-list" class="mt-4 space-y-2"></div>
+            </section>
+            <section id="admin-section-backup" class="admin-section hidden neon-card p-4 sm:p-5">
           <div class="flex items-center justify-between gap-2">
             <div>
               <h3 class="text-sm font-bold text-neon-blue">데이터 백업</h3>
@@ -378,9 +434,8 @@
             </div>
             <button onclick="adminDownloadExcel()" id="admin-export-btn" class="shrink-0 rounded-lg bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-3.5 py-2 text-xs font-bold text-background">엑셀 다운로드</button>
           </div>
-        </div>
-
-        <div class="neon-card p-4 sm:p-5">
+</section>
+<section id="admin-section-points" class="admin-section hidden neon-card p-4 sm:p-5">
           <h3 class="mb-4 text-sm font-bold text-neon-purple">포인트 적립</h3>
           <div class="mb-3 flex gap-2">
             <input id="admin-date" type="date" class="w-1/2 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-neon-purple" />
@@ -391,18 +446,17 @@
           <div id="admin-quick-names" class="mt-3 flex flex-wrap gap-1.5"></div>
           <button onclick="adminSubmitPoints()" class="mt-4 w-full rounded-lg bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue py-2.5 text-sm font-bold text-background">적립하기</button>
           <p id="admin-submit-msg" class="mt-2 text-xs"></p>
-        </div>
-
-        <div class="neon-card p-4 sm:p-5">
+</section>
+<section id="admin-section-logs" class="admin-section hidden neon-card p-4 sm:p-5">
           <h3 class="mb-4 text-sm font-bold text-neon-pink">적립 현황</h3>
           <div id="admin-points-log" class="flex max-h-[420px] flex-col gap-2 overflow-y-auto pr-1"></div>
-        </div>
-
-        <div class="neon-card p-4 sm:p-5">
+</section>
+<section id="admin-section-rsvps" class="admin-section hidden neon-card p-4 sm:p-5">
           <h3 class="mb-4 text-sm font-bold text-neon-blue">참여자 관리</h3>
           <div id="admin-rsvp-list" class="flex max-h-[360px] flex-col gap-2 overflow-y-auto pr-1"></div>
+</section>
+          </div>
         </div>
-
       </div>
     </div>
   </section>
@@ -427,7 +481,7 @@
 (function(){
   const SUPABASE_URL = 'https://hyrqpfivceyxvwbqqznj.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh5cnFwZml2Y2V5eHZ3YnFxem5qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5OTY4ODEsImV4cCI6MjEwMzU3Mjg4MX0.eJHMjL9wdGmRyZ6V6M5eYR5CWjeWVo1-0UOElgm22T4';
-  const ADMIN_PASSWORD = '77889900';
+  let adminPassword = '';
 
   function sbHeaders(withBody){
     const h = { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SUPABASE_ANON_KEY };
@@ -437,7 +491,7 @@
   function escapeHtml(str){
     const div = document.createElement('div');
     div.textContent = str == null ? '' : String(str);
-    return div.innerHTML;
+    return div.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
   function formatMD(isoDate){
     if (!isoDate) return '';
@@ -711,141 +765,94 @@
   }
 
   // ===== 스케줄 =====
-  const SCHEDULE_YEAR = 2026;
+  let SCHEDULE_YEAR = new Date().getFullYear();
   const DAY_NAMES = ['일','월','화','수','목','금','토'];
-  const SCHEDULE_DATA = {
-    7: { // 8월 (0-indexed)
-      groups: [
-        { items: [
-          { day: 2, venue: '구로 러너펍' },
-          { day: 4, venue: '홍대 러너펍' },
-          { day: 5, venue: '논현 러너펍' },
-          { day: 6, venue: '언주 제이블러프' },
-          { day: 7, venue: 'KMGM 목동점' },
-          { day: 8, venue: '대전 하이파켓' },
-        ]},
-        { items: [
-          { day: 11, venue: '언주 제이블러프' },
-          { day: 12, venue: '구리 러너펍' },
-          { day: 13, venue: '별내 러너펍' },
-          { day: 14, venue: '파주 러너펍' },
-        ]},
-        { items: [
-          { day: 16, venue: '구로 러너펍' },
-          { day: 17, venue: '언주 제이블러프' },
-          { day: 19, venue: '논현 러너펍' },
-          { day: 20, venue: '인계 러너펍' },
-          { day: 21, venue: '홍대 러너펍' },
-          { day: 22, venue: '언주 제이블러프' },
-        ]},
-        { items: [
-          { day: 23, venue: '수원 러너펍' },
-          { day: 25, venue: '안양 KMGM' },
-          { day: 26, venue: '구리 러너펍' },
-          { day: 27, venue: '논현 러너펍' },
-          { day: 28, venue: '언주 제이블러프' },
-          { day: 29, venue: '별내 러너펍' },
-        ]},
-        { items: [
-          { day: 30, venue: '구로 러너펍' },
-          { day: 31, venue: '구리 러너펍' },
-        ]},
-      ]
-    },
-    8: { // 9월 (0-indexed)
-      groups: [
-        { items: [
-          { day: 2, venue: '구로 러너펍' },
-          { day: 3, venue: '영등포 케이스타 펍' },
-          { day: 4, venue: '영등포 케이스타 펍' },
-          { day: 5, venue: '구리 러너펍' },
-        ]},
-        { items: [
-          { day: 7, venue: '광주 용봉점 치즈홀덤펍' },
-          { day: 9, venue: '언주 제이블러프' },
-          { day: 10, venue: '논현 러너펍' },
-          { day: 11, venue: '신촌 러너펍' },
-          { day: 12, venue: '구리 러너펍' },
-        ]},
-        { items: [
-          { day: 13, venue: '영등포 러너펍' },
-          { day: 14, venue: '구리 러너펍' },
-          { day: 15, venue: '역삼 러너펍' },
-          { day: 17, venue: '인계 러너펍' },
-        ]},
-        { banner: { emoji: '🏖️', text: '9/18~20 휴가', day: 18, endDay: 20, calendarText: '휴가' } },
-        { items: [
-          { day: 21, venue: '구리 러너펍' },
-          { day: 22, venue: '논현 러너펍' },
-          { day: 23, venue: 'KMGM 목동점' },
-        ]},
-        { banner: { emoji: '🌕', text: '9/24~25 해피추석 🧡', day: 24, endDay: 25, calendarText: '해피추석' } },
-        { items: [
-          { day: 26, venue: '구로 러너펍' },
-          { day: 28, venue: '광주 스타디움' },
-          { day: 29, venue: '안양 KMGM' },
-          { day: 30, venue: '구로 러너펍' },
-        ]},
-      ]
-    },
-  };
-  SCHEDULE_DATA[9] = { // 10월 (0-indexed)
-    groups: [
-      { items: [
-        { day: 1, venue: '구리 러너펍' },
-        { day: 2, venue: '홍대 러너펍' },
-        { day: 3, venue: '수원 인계 러너펍' },
-      ]},
-      { items: [
-        { day: 4, venue: '수원 인계 치즈펍' },
-        { day: 5, venue: '수원역 러너펍' },
-        { day: 7, venue: '언주 제이블러프' },
-        { day: 8, venue: '노원 러너펍' },
-        { day: 9, venue: '홍대 러너펍' },
-        { day: 10, venue: 'KMGM 목동점' },
-      ]},
-      { items: [
-        { day: 13, venue: '별내 러너펍' },
-        { day: 14, venue: '언주 제이블러프' },
-        { day: 15, venue: '논현 러너펍' },
-        { day: 17, venue: '역삼 러너펍' },
-        { day: 18, venue: '신사 빅스택' },
-      ]},
-      { items: [
-        { day: 19, venue: '구리 러너펍' },
-        { day: 20, venue: '영등포 러너펍' },
-        { day: 21, venue: '언주 제이블러프' },
-      ]},
-      { banner: { emoji: '🏆', text: '10/23~25 대전으로 가요🙇🏻‍♀️ 헤즈업 HGP 대회 🏆', day: 23, endDay: 25, calendarText: '헤즈업 HGP 대회' } },
-      { items: [
-        { day: 27, venue: '홍대 러너펍' },
-        { day: 28, venue: '언주 제이블러프' },
-        { day: 29, venue: '인계 러너펍' },
-        { day: 30, venue: '역삼 러너펍' },
-        { day: 31, venue: 'KMGM 목동점' },
-      ]},
-    ]
-  };
-  const SCHEDULE_MONTH_KEYS = Object.keys(SCHEDULE_DATA).map(Number).sort(function(a, b){ return a - b; });
-  function defaultScheduleMonthIndex(){
-    const now = new Date();
-    if (now.getFullYear() !== SCHEDULE_YEAR) return SCHEDULE_MONTH_KEYS.length - 1;
-    const nowMonthKey = now.getMonth();
-    let idx = SCHEDULE_MONTH_KEYS.indexOf(nowMonthKey);
-    if (idx !== -1) return idx;
-    // 데이터가 아직 없는 달이면, 그 이전 달 중 가장 최근 것을 보여줌
-    idx = 0;
-    for (let i = 0; i < SCHEDULE_MONTH_KEYS.length; i++) {
-      if (SCHEDULE_MONTH_KEYS[i] <= nowMonthKey) idx = i;
-    }
-    return idx;
-  }
-  let scheduleMonthIndex = defaultScheduleMonthIndex(); // 오늘 날짜 기준 자동 선택
-
+  let SCHEDULE_DATA = {};
+  let SCHEDULE_MONTH_KEYS = [new Date().getMonth()];
+  let scheduleMonthSlots = [{year:SCHEDULE_YEAR, month:SCHEDULE_MONTH_KEYS[0]}];
+  let scheduleMonthIndex = 0;
   let scheduleView = 'list';
   let scheduleSelectedDay = null;
   let scheduleRenderVersion = 0;
   let scheduleRsvpMap = {};
+  let scheduleEvents = [];
+  let scheduleVenues = [];
+  let scheduleDataReady = false;
+  let scheduleLoadVersion = 0;
+
+  function localISODate(date = new Date()){
+    return date.getFullYear() + '-' + String(date.getMonth()+1).padStart(2,'0') + '-' + String(date.getDate()).padStart(2,'0');
+  }
+  function dateParts(iso){ return iso.split('-').map(Number); }
+  function monthOrdinal(iso){ const p=dateParts(iso); return p[0]*12+p[1]-1; }
+  function setScheduleMonth(index){
+    scheduleMonthIndex = index;
+    const slot = scheduleMonthSlots[index];
+    SCHEDULE_YEAR = slot.year;
+    SCHEDULE_MONTH_KEYS = scheduleMonthSlots.map(function(s){return s.month;});
+    SCHEDULE_DATA = {};
+    const monthStart = localISODate(new Date(slot.year,slot.month,1));
+    const monthEnd = localISODate(new Date(slot.year,slot.month+1,0));
+    const groups = scheduleEvents.filter(function(e){return e.event_date<=monthEnd && e.end_date>=monthStart;}).map(function(e){
+      const day=Number((e.event_date<monthStart?monthStart:e.event_date).slice(8,10));
+      const endDay=Number((e.end_date>monthEnd?monthEnd:e.end_date).slice(8,10));
+      if(e.kind==='banner') return {banner:{day,endDay,text:e.title,calendarText:e.calendar_text||e.title,emoji:e.emoji||'📌',time:e.start_time}};
+      return {items:[{day,venue:e.venue,time:e.start_time}]};
+    });
+    SCHEDULE_DATA[slot.month]={groups};
+  }
+  function rebuildScheduleMonths(preferredDate){
+    const current = scheduleMonthSlots[scheduleMonthIndex];
+    const preferred = preferredDate ? monthOrdinal(preferredDate) : current.year*12+current.month;
+    const today=monthOrdinal(localISODate());
+    const bounds=[today,preferred];
+    scheduleEvents.forEach(function(e){bounds.push(monthOrdinal(e.event_date),monthOrdinal(e.end_date));});
+    const min=Math.min(...bounds),max=Math.max(...bounds);
+    scheduleMonthSlots=[];
+    for(let value=min;value<=max;value++) scheduleMonthSlots.push({year:Math.floor(value/12),month:value%12});
+    setScheduleMonth(preferred-min);
+  }
+  async function scheduleFetch(path, options = {}){
+    const controller=new AbortController();
+    const timer=setTimeout(function(){controller.abort();},15000);
+    try{
+      const res=await fetch(SUPABASE_URL+'/rest/v1/'+path,{...options,headers:sbHeaders(!!options.body),signal:controller.signal});
+      const data=await res.json();
+      if(!res.ok) throw new Error(data.message || 'REQUEST_FAILED');
+      return data;
+    }finally{clearTimeout(timer);}
+  }
+  async function fetchScheduleRows(table,order){
+    const rows=[];
+    for(let offset=0;;offset+=500){
+      const page=await scheduleFetch(table+'?select=*&order='+order+'&limit=500&offset='+offset);
+      if(!Array.isArray(page)) throw new Error('INVALID_RESPONSE');
+      rows.push(...page);
+      if(page.length<500) return rows;
+    }
+  }
+  async function loadScheduleData(preferredDate){
+    const request=++scheduleLoadVersion;
+    try{
+      const [events,venues]=await Promise.all([fetchScheduleRows('schedule_events','event_date.asc,id.asc'),fetchScheduleRows('schedule_venues','name.asc')]);
+      if(request!==scheduleLoadVersion) return false;
+      scheduleEvents=events;
+      scheduleVenues=venues;
+      scheduleDataReady=true;
+      rebuildScheduleMonths(preferredDate);
+      document.getElementById('schedule-load-message').textContent='';
+      renderSchedule();
+      adminRenderSchedules();
+      adminRenderVenues();
+      adminRenderVenueSuggestions();
+      return true;
+    }catch(error){
+      if(request!==scheduleLoadVersion) return false;
+      document.getElementById('schedule-load-message').innerHTML='일정을 불러오지 못했어요. <button type="button" onclick="scheduleReload()" class="underline">다시 시도</button>';
+      return false;
+    }
+  }
+  window.scheduleReload = function(){ return loadScheduleData(); };
 
   // 같은 브랜드(프렌차이즈)는 같은 색으로 묶어서 표시
   const VENUE_BRANDS = ['러너펍', '제이블러프', 'KMGM', '케이스타', '치즈홀덤펍', '스타디움'];
@@ -874,14 +881,14 @@
     const list = [];
     data.groups.forEach(function(g){
       if (g.banner) {
-        list.push({ kind: 'banner', day: g.banner.day, endDay: g.banner.endDay || g.banner.day, calendarText: g.banner.calendarText, emoji: g.banner.emoji, text: g.banner.text });
+        list.push({ kind: 'banner', day: g.banner.day, endDay: g.banner.endDay || g.banner.day, calendarText: g.banner.calendarText, emoji: g.banner.emoji, time: g.banner.time, text: g.banner.text });
       } else {
         g.items.forEach(function(it){
-          list.push({ kind: 'item', day: it.day, venue: it.venue });
+          list.push({ kind: 'item', day: it.day, venue: it.venue, time: it.time });
         });
       }
     });
-    list.sort(function(a, b){ return a.day - b.day; });
+    list.sort(function(a, b){ return a.day - b.day || (a.time || '99:99').localeCompare(b.time || '99:99'); });
     return list;
   }
 
@@ -896,7 +903,7 @@
         const b = entries[i];
         html += `
         <div class="${spacing} flex items-center justify-center gap-2 rounded-xl border border-warning/30 bg-warning/10 py-3 text-[13px] font-bold text-warning">
-          <span>${b.emoji}</span><span>${b.text}</span>
+          <span>${escapeHtml(b.emoji)}</span><span>${escapeHtml(b.text)}${b.time ? ' · ' + escapeHtml(b.time.slice(0,5)) : ''}</span>
         </div>`;
         i++;
       } else {
@@ -923,7 +930,7 @@
           <div>
             <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
               <span class="shrink-0 rounded-lg border ${accent.border} ${accent.bg} px-2.5 py-1.5 text-center text-[12px] font-bold ${accent.text}">${monthKey + 1}/${it.day}<span class="ml-1 font-normal text-muted-foreground">(${dayName})</span></span>
-              <span class="min-w-0 flex-1 break-words text-[13.5px] text-foreground/85">${it.venue}</span>
+              <span class="min-w-0 flex-1 break-words text-[13.5px] text-foreground/85">${escapeHtml(it.venue)}${it.time ? '<span class="ml-2 text-xs text-neon-blue">' + escapeHtml(it.time.slice(0,5)) + '</span>' : ''}</span>
               ${isToday ? '<span class="shrink-0 rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-bold text-success">오늘</span>' : ''}
               <div class="flex w-full shrink-0 justify-end gap-1.5 sm:w-auto">
                 <a href="${mapUrl}" target="_blank" rel="noopener" class="shrink-0 rounded-full border border-border px-2.5 py-1.5 text-[11px] font-semibold text-muted-foreground transition-colors hover:border-neon-purple/50 hover:text-neon-purple">📍 위치</a>
@@ -940,9 +947,9 @@
     return html;
   }
 
-  async function loadRsvps(monthKey){
+  async function loadRsvps(monthKey, year = SCHEDULE_YEAR){
     try {
-      const res = await fetch(SUPABASE_URL + '/rest/v1/schedule_rsvps?year=eq.' + SCHEDULE_YEAR + '&month=eq.' + monthKey + '&select=day,nickname&order=created_at.asc', { headers: sbHeaders() });
+      const res = await fetch(SUPABASE_URL + '/rest/v1/schedule_rsvps?year=eq.' + year + '&month=eq.' + monthKey + '&select=day,nickname&order=created_at.asc', { headers: sbHeaders() });
       const rows = await res.json();
       const map = {};
       rows.forEach(function(r){ (map[r.day] = map[r.day] || []).push(r.nickname); });
@@ -970,7 +977,7 @@
       const label = (monthKey + 1) + '월 ' + day + '일 ' + DAY_NAMES[weekday] + '요일, ' + (labels.join(', ') || '일정 없음');
       cells += `<button type="button" class="schedule-day" onclick="scheduleSelectDay(${day})" aria-label="${escapeHtml(label)}" aria-pressed="${day === scheduleSelectedDay}" aria-controls="schedule-day-detail" ${day === todayDay ? 'aria-current="date"' : ''}>
         <span class="schedule-day-number ${weekday === 0 ? 'schedule-sunday' : weekday === 6 ? 'schedule-saturday' : ''}">${day}</span>
-        ${dayEntries.map(function(entry){ return `<span class="schedule-event ${entry.kind === 'banner' ? 'schedule-event-banner' : ''}">${escapeHtml(entry.kind === 'banner' ? entry.emoji + ' ' + (entry.calendarText || entry.text) : entry.venue)}</span>`; }).join('')}
+        ${dayEntries.map(function(entry){ return `<span class="schedule-event ${entry.kind === 'banner' ? 'schedule-event-banner' : ''}">${escapeHtml((entry.time ? entry.time.slice(0,5) + ' ' : '') + (entry.kind === 'banner' ? entry.emoji + ' ' + (entry.calendarText || entry.text) : entry.venue))}</span>`; }).join('')}
       </button>`;
     }
     const trailing = (7 - (firstWeekday + daysInMonth) % 7) % 7;
@@ -1002,7 +1009,7 @@
     const calendar = document.getElementById('schedule-calendar');
     if (!el || !data) return;
 
-    document.getElementById('schedule-title').textContent = '🗓️ ' + (monthKey + 1) + '월 일정';
+    document.getElementById('schedule-title').textContent = '🗓️ ' + SCHEDULE_YEAR + '년 ' + (monthKey + 1) + '월 일정';
     const prevBtn = document.getElementById('schedule-prev-btn');
     prevBtn.disabled = scheduleMonthIndex <= 0;
     prevBtn.textContent = scheduleMonthIndex <= 0 ? '◀ 이전달' : '◀ ' + (SCHEDULE_MONTH_KEYS[scheduleMonthIndex - 1] + 1) + '월';
@@ -1023,8 +1030,8 @@
     let upcoming = flat, past = [], todayDay = null;
     if (isCurrentMonth) {
       todayDay = now.getDate();
-      upcoming = flat.filter(function(e){ return e.day >= todayDay; });
-      past = flat.filter(function(e){ return e.day < todayDay; });
+      upcoming = flat.filter(function(e){ return (e.endDay || e.day) >= todayDay; });
+      past = flat.filter(function(e){ return (e.endDay || e.day) < todayDay; });
     } else if (isPastMonth) {
       upcoming = [];
       past = flat;
@@ -1064,7 +1071,7 @@
   window.scheduleGoto = function(dir){
     const next = scheduleMonthIndex + dir;
     if (next < 0 || next >= SCHEDULE_MONTH_KEYS.length) return;
-    scheduleMonthIndex = next;
+    setScheduleMonth(next);
     scheduleSelectedDay = null;
     renderSchedule();
   };
@@ -1073,7 +1080,7 @@
 
   window.rsvpOpenModal = function(monthKey, day){
     rsvpTarget = { year: SCHEDULE_YEAR, month: monthKey, day: day };
-    document.getElementById('rsvp-modal-date').textContent = (monthKey + 1) + '/' + day + ' 참여 신청';
+    document.getElementById('rsvp-modal-date').textContent = SCHEDULE_YEAR + '/' + (monthKey + 1) + '/' + day + ' 참여 신청';
     document.getElementById('rsvp-nickname-input').value = '';
     document.getElementById('rsvp-error').classList.add('hidden');
     const modal = document.getElementById('rsvp-modal');
@@ -1112,6 +1119,171 @@
       errorEl.textContent = '신청에 실패했어요. 다시 시도해주세요.';
       errorEl.classList.remove('hidden');
     }
+  };
+
+  let editingSchedule = null;
+  let scheduleSaving = false;
+  function adminScheduleMessage(text, failed = false){
+    const el=document.getElementById('admin-schedule-message');
+    el.textContent=text;
+    el.className='mt-3 text-xs '+(failed?'text-destructive':'text-success');
+  }
+  function scheduleErrorMessage(error){
+    const message=String(error.message||error);
+    if(message.includes('INVALID_PASSWORD')) return '로그인이 만료되었어요. 다시 로그인해주세요.';
+    if(message.includes('SCHEDULE_CHANGED')) return '다른 화면에서 변경된 일정이에요. 새로고침 후 다시 수정해주세요.';
+    if(message.includes('duplicate key')) return '같은 날짜·매장·시간의 일정이 이미 등록되어 있어요.';
+    if(message.includes('INVALID_') || message.includes('TITLE_REQUIRED') || message.includes('check constraint')) return '날짜와 매장명 또는 제목을 확인해주세요.';
+    return '저장 결과를 확인하지 못했어요. 새로고침으로 등록 여부를 확인한 뒤 다시 시도해주세요.';
+  }
+  window.adminShowSection = function(section){
+    document.querySelectorAll('.admin-section').forEach(function(el){el.classList.toggle('hidden',el.id!=='admin-section-'+section);});
+    document.querySelectorAll('[data-admin-section]').forEach(function(button){
+      if(button.dataset.adminSection===section) button.setAttribute('aria-current','page');
+      else button.removeAttribute('aria-current');
+    });
+  };
+  window.adminScheduleKindChanged = function(){
+    const banner=document.getElementById('admin-schedule-kind').value==='banner';
+    document.getElementById('admin-schedule-venue-wrap').classList.toggle('hidden',banner);
+    document.getElementById('admin-schedule-banner-wrap').classList.toggle('hidden',!banner);
+    document.getElementById('admin-schedule-end-wrap').classList.toggle('hidden',!banner);
+    document.getElementById('admin-schedule-venue').required=!banner;
+    document.getElementById('admin-schedule-title').required=banner;
+    document.getElementById('admin-schedule-end').required=banner;
+    if(banner && !document.getElementById('admin-schedule-end').value) document.getElementById('admin-schedule-end').value=document.getElementById('admin-schedule-date').value;
+  };
+  window.adminNewSchedule = function(venue){
+    if(scheduleSaving) return;
+    editingSchedule=null;
+    document.getElementById('admin-schedule-form').reset();
+    document.getElementById('admin-schedule-date').value=localISODate();
+    document.getElementById('admin-schedule-venue').value=typeof venue==='string'?venue:'';
+    document.getElementById('admin-schedule-form-title').textContent='새 일정 등록';
+    document.getElementById('admin-schedule-save').textContent='일정 등록';
+    adminScheduleMessage('');
+    window.adminScheduleKindChanged();
+    window.adminRenderVenueSuggestions();
+    window.adminShowSection('schedule');
+  };
+  function venueMatches(query){
+    const normalized=query.trim().toLocaleLowerCase();
+    return scheduleVenues.map(function(venue,index){return {name:venue.name,index};}).filter(function(venue){return venue.name.toLocaleLowerCase().includes(normalized);});
+  }
+  window.adminPickVenue = function(index){
+    const venue=scheduleVenues[index];
+    if(!venue || scheduleSaving) return;
+    document.getElementById('admin-schedule-venue').value=venue.name;
+    window.adminRenderVenueSuggestions();
+  };
+  window.adminRenderVenueSuggestions = function(){
+    const el=document.getElementById('admin-venue-suggestions');
+    const input=document.getElementById('admin-schedule-venue');
+    if(!el || !input) return;
+    const matches=venueMatches(input.value);
+    el.innerHTML=matches.slice(0,12).map(function(v){return `<button type="button" onclick="adminPickVenue(${v.index})" class="admin-secondary">${escapeHtml(v.name)}</button>`;}).join('') || '<p class="text-xs text-muted-foreground">새 매장으로 등록돼요.</p>';
+    if(matches.length>12) el.innerHTML+='<p class="w-full text-[11px] text-muted-foreground">매장명을 입력하면 목록을 좁힐 수 있어요.</p>';
+  };
+  window.adminUseVenue = function(index){
+    if(scheduleVenues[index]){ window.adminNewSchedule(scheduleVenues[index].name); document.getElementById('admin-schedule-form').scrollIntoView({behavior:'smooth',block:'start'}); }
+  };
+  window.adminRenderVenues = function(){
+    const el=document.getElementById('admin-venue-list');
+    if(!el) return;
+    document.getElementById('admin-venue-count').textContent=String(scheduleVenues.length);
+    if(!scheduleDataReady){el.innerHTML='<p class="text-xs text-muted-foreground">매장 목록을 불러오는 중이에요.</p>';return;}
+    el.innerHTML=venueMatches(document.getElementById('admin-venue-search').value).map(function(v){
+      const count=scheduleEvents.filter(function(e){return e.venue===v.name;}).length;
+      return `<div class="flex items-center justify-between gap-3 rounded-lg bg-white/5 p-3"><div class="min-w-0"><p class="break-words text-sm font-semibold">${escapeHtml(v.name)}</p><p class="mt-1 text-xs text-muted-foreground">등록 일정 ${count}건</p></div><button type="button" onclick="adminUseVenue(${v.index})" class="admin-secondary shrink-0">일정 등록</button></div>`;
+    }).join('') || '<p class="text-xs text-muted-foreground">검색한 매장이 없어요. 일정 등록에서 새 매장명을 입력할 수 있어요.</p>';
+  };
+  window.adminRenderSchedules = function(){
+    const el=document.getElementById('admin-schedule-list');
+    if(!el) return;
+    const input=document.getElementById('admin-schedule-month');
+    if(!input.value) input.value=localISODate().slice(0,7);
+    if(!scheduleDataReady){el.innerHTML='<p class="text-xs text-muted-foreground">일정을 불러오는 중이에요.</p>';return;}
+    const month=input.value;
+    const events=scheduleEvents.filter(function(e){return e.event_date.slice(0,7)<=month && e.end_date.slice(0,7)>=month;});
+    el.innerHTML=events.map(function(e){
+      const title=e.kind==='visit'?e.venue:e.title;
+      const date=e.event_date+(e.end_date!==e.event_date?' ~ '+e.end_date:'')+(e.start_time?' · '+e.start_time.slice(0,5):'');
+      return `<div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border p-3"><div class="min-w-0 flex-1"><p class="text-xs text-neon-purple">${escapeHtml(date)}</p><p class="mt-1 break-words text-sm font-semibold">${escapeHtml(title)}</p></div><div class="flex shrink-0 gap-2"><button type="button" onclick="adminEditSchedule('${e.id}')" class="admin-secondary" ${scheduleSaving?'disabled':''}>수정</button><button type="button" onclick="adminDeleteSchedule('${e.id}')" class="admin-secondary" ${scheduleSaving?'disabled':''}>삭제</button></div></div>`;
+    }).join('') || '<p class="py-4 text-center text-xs text-muted-foreground">이 달에 등록된 일정이 없어요.</p>';
+  };
+  window.adminEditSchedule = function(id){
+    if(scheduleSaving) return;
+    const e=scheduleEvents.find(function(row){return row.id===id;});
+    if(!e) return;
+    editingSchedule={id:e.id,version:e.version};
+    document.getElementById('admin-schedule-kind').value=e.kind;
+    document.getElementById('admin-schedule-date').value=e.event_date;
+    document.getElementById('admin-schedule-end').value=e.end_date;
+    document.getElementById('admin-schedule-time').value=e.start_time?e.start_time.slice(0,5):'';
+    document.getElementById('admin-schedule-venue').value=e.venue||'';
+    document.getElementById('admin-schedule-title').value=e.title;
+    document.getElementById('admin-schedule-short').value=e.calendar_text;
+    document.getElementById('admin-schedule-emoji').value=e.emoji||'📌';
+    document.getElementById('admin-schedule-form-title').textContent='일정 수정';
+    document.getElementById('admin-schedule-save').textContent='수정 저장';
+    window.adminScheduleKindChanged();
+    window.adminRenderVenueSuggestions();
+    adminScheduleMessage('');
+    document.getElementById('admin-schedule-form').scrollIntoView({behavior:'smooth',block:'start'});
+  };
+  function setScheduleSaving(value){
+    scheduleSaving=value;
+    document.getElementById('admin-schedule-fields').disabled=value;
+    window.adminRenderSchedules();
+  }
+  window.adminSaveSchedule = async function(event){
+    event.preventDefault();
+    if(scheduleSaving) return;
+    if(!scheduleDataReady || !adminPassword){adminScheduleMessage('로그인과 일정 새로고침 후 다시 시도해주세요.',true);return;}
+    const value=id=>document.getElementById('admin-schedule-'+id).value;
+    if(!document.getElementById('admin-schedule-form').reportValidity()) return;
+    const kind=value('kind'),date=value('date'),end=kind==='visit'?date:value('end');
+    if(!date || !end || end<date){adminScheduleMessage('종료일은 시작일 이후로 입력해주세요.',true);return;}
+    const payload={input_password:adminPassword,p_id:editingSchedule?editingSchedule.id:null,p_version:editingSchedule?editingSchedule.version:null,
+      p_date:date,p_end_date:end,p_kind:kind,p_venue:kind==='visit'?value('venue').trim():null,
+      p_title:kind==='banner'?value('title').trim():'',p_calendar_text:kind==='banner'?value('short').trim():'',p_emoji:kind==='banner'?value('emoji'):'',p_start_time:value('time')||null};
+    setScheduleSaving(true);
+    adminScheduleMessage('저장 중이에요…');
+    try{
+      const saved=await scheduleFetch('rpc/admin_save_schedule',{method:'POST',body:JSON.stringify(payload)});
+      ++scheduleLoadVersion;
+      scheduleEvents=scheduleEvents.filter(function(e){return e.id!==saved.id;}).concat(saved).sort(function(a,b){return a.event_date.localeCompare(b.event_date);});
+      if(saved.venue && !scheduleVenues.some(function(v){return v.name===saved.venue;})) scheduleVenues.push({name:saved.venue});
+      scheduleVenues.sort(function(a,b){return a.name.localeCompare(b.name,'ko');});
+      document.getElementById('admin-schedule-month').value=date.slice(0,7);
+      rebuildScheduleMonths(date);scheduleSelectedDay=Number(date.slice(8,10));renderSchedule();
+      setScheduleSaving(false);window.adminNewSchedule();
+      window.adminRenderSchedules();window.adminRenderVenues();
+      adminScheduleMessage('저장 완료! 사이트 일정과 캘린더에 반영했어요.');
+    }catch(error){adminScheduleMessage(scheduleErrorMessage(error),true);}
+    finally{setScheduleSaving(false);}
+  };
+  window.adminDeleteSchedule = async function(id){
+    if(scheduleSaving) return;
+    const e=scheduleEvents.find(function(row){return row.id===id;});
+    if(!e || !window.confirm(e.event_date+' '+(e.venue||e.title)+' 일정을 삭제할까요?')) return;
+    setScheduleSaving(true);
+    try{
+      await scheduleFetch('rpc/admin_delete_schedule',{method:'POST',body:JSON.stringify({input_password:adminPassword,p_id:id,p_version:e.version})});
+      ++scheduleLoadVersion;
+      scheduleEvents=scheduleEvents.filter(function(row){return row.id!==id;});
+      rebuildScheduleMonths();renderSchedule();setScheduleSaving(false);
+      if(editingSchedule && editingSchedule.id===id) window.adminNewSchedule();
+      window.adminRenderSchedules();window.adminRenderVenues();
+      adminScheduleMessage('일정을 삭제했어요. 매장 목록은 유지됩니다.');
+    }catch(error){adminScheduleMessage(scheduleErrorMessage(error),true);}
+    finally{setScheduleSaving(false);}
+  };
+  window.adminReloadSchedules = async function(){
+    if(scheduleSaving) return;
+    adminScheduleMessage('새로고침 중이에요…');
+    const ok=await loadScheduleData();
+    adminScheduleMessage(ok?'최신 일정을 불러왔어요.':'불러오지 못했어요. 잠시 후 다시 시도해주세요.',!ok);
   };
 
   // ===== 관리자 =====
@@ -1207,27 +1379,31 @@
     }
   };
 
-  window.adminLogin = function(){
-    const input = document.getElementById('admin-pw-input');
-    const errorEl = document.getElementById('admin-login-error');
-    if (input.value === ADMIN_PASSWORD) {
+  window.adminLogin = async function(){
+    const input=document.getElementById('admin-pw-input');
+    const errorEl=document.getElementById('admin-login-error');
+    const button=document.querySelector('#admin-login button');
+    if(button.disabled) return;
+    button.disabled=true;button.textContent='확인 중…';errorEl.classList.add('hidden');
+    try{
+      await scheduleFetch('rpc/admin_check_password',{method:'POST',body:JSON.stringify({input_password:input.value})});
+      adminPassword=input.value;input.value='';
       document.getElementById('admin-login').classList.add('hidden');
-      const panel = document.getElementById('admin-panel');
-      panel.classList.remove('hidden');
-      panel.classList.add('flex');
-      const dateInput = document.getElementById('admin-date');
-      if (!dateInput.value) dateInput.value = new Date().toISOString().slice(0, 10);
-      if (!document.getElementById('admin-entries').children.length) window.adminAddRow();
-      loadQuickNames();
-      loadAdminPointsLog();
-      loadAdminRsvps();
-      errorEl.classList.add('hidden');
-    } else {
+      const panel=document.getElementById('admin-panel');panel.classList.remove('hidden');panel.classList.add('flex');
+      const dateInput=document.getElementById('admin-date');if(!dateInput.value) dateInput.value=localISODate();
+      if(!document.getElementById('admin-entries').children.length) window.adminAddRow();
+      window.adminNewSchedule();
+      loadQuickNames();loadAdminPointsLog();loadAdminRsvps();
+      if(!await loadScheduleData()) adminScheduleMessage('일정을 불러오지 못했어요. 새로고침해주세요.',true);
+    }catch(error){
+      errorEl.textContent=String(error.message).includes('INVALID_PASSWORD')?'비밀번호가 올바르지 않아요.':'로그인 연결에 실패했어요. 다시 시도해주세요.';
       errorEl.classList.remove('hidden');
-    }
+    }finally{button.disabled=false;button.textContent='입장';}
   };
 
   window.adminLogout = function(){
+    adminPassword = '';
+    editingSchedule = null;
     const panel = document.getElementById('admin-panel');
     panel.classList.add('hidden');
     panel.classList.remove('flex');
@@ -1262,7 +1438,7 @@
     if (!window.confirm('이 참여 신청을 삭제할까요?')) return;
     await fetch(SUPABASE_URL + '/rest/v1/rpc/admin_delete_rsvp', {
       method: 'POST', headers: sbHeaders(true),
-      body: JSON.stringify({ input_password: ADMIN_PASSWORD, p_id: id })
+      body: JSON.stringify({ input_password: adminPassword, p_id: id })
     });
     loadAdminRsvps();
     renderSchedule();
@@ -1343,7 +1519,7 @@
     if (!name || !delta || delta <= 0) { alert('이름과 점수를 확인해주세요.'); return; }
     await fetch(SUPABASE_URL + '/rest/v1/rpc/admin_update_point', {
       method: 'POST', headers: sbHeaders(true),
-      body: JSON.stringify({ input_password: ADMIN_PASSWORD, p_id: id, p_name: name, p_delta: delta, p_venue: venue || null, p_earned_date: date || null })
+      body: JSON.stringify({ input_password: adminPassword, p_id: id, p_name: name, p_delta: delta, p_venue: venue || null, p_earned_date: date || null })
     });
     await loadAdminPointsLog();
     loadPointsData();
@@ -1354,7 +1530,7 @@
     if (!window.confirm('이 적립 내역을 삭제할까요?')) return;
     await fetch(SUPABASE_URL + '/rest/v1/rpc/admin_delete_point', {
       method: 'POST', headers: sbHeaders(true),
-      body: JSON.stringify({ input_password: ADMIN_PASSWORD, p_id: id })
+      body: JSON.stringify({ input_password: adminPassword, p_id: id })
     });
     await loadAdminPointsLog();
     loadPointsData();
@@ -1380,7 +1556,7 @@
     try {
       const res = await fetch(SUPABASE_URL + '/rest/v1/rpc/admin_add_points', {
         method: 'POST', headers: sbHeaders(true),
-        body: JSON.stringify({ input_password: ADMIN_PASSWORD, p_entries: entries, p_venue: venue, p_earned_date: date })
+        body: JSON.stringify({ input_password: adminPassword, p_entries: entries, p_venue: venue, p_earned_date: date })
       });
       if (!res.ok) throw new Error('failed');
       msgEl.textContent = '적립 완료! 최근/랭킹에 반영됐어요.'; msgEl.className = 'mt-2 text-xs text-success';
@@ -1650,7 +1826,7 @@
   updateRankMonthLabel();
   updateRankNavButtons();
   loadPointsData();
-  renderSchedule();
+  loadScheduleData();
   loadVisitorCount();
   renderTodayHand();
   holdemInit();
