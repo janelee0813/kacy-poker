@@ -12,6 +12,8 @@ function harness(){
     escapeHtml:s=>String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;'),getTmapUrl:()=>null};
   context.window=context;
   vm.createContext(context);
+  vm.runInContext(fs.readFileSync(require('node:path').join(__dirname,'../venue-locations.js'),'utf8'),context);
+  context.getTmapUrl=()=>null;
   vm.runInContext("let adminPassword='test-password';"+source,context);
   vm.runInContext('loadRsvps=async()=>({});',context);
   return {ctx:context,get,run:s=>vm.runInContext(s,context)};
@@ -40,7 +42,7 @@ test('successful registration persists through RPC, updates both views and retai
   await h.ctx.adminSaveSchedule({preventDefault(){}});
   assert.equal(payload.p_end_date,'2027-01-05');assert.equal(payload.p_start_time,'11:00');assert.equal(h.run('scheduleEvents.length'),1);
   assert.equal(h.run('scheduleVenues[0].name'),'새 매장');assert(h.get('schedule-list').innerHTML.includes('새 매장'));
-  assert(h.get('schedule-calendar').innerHTML.includes('11:00 새 매장'));assert(h.get('admin-schedule-message').textContent.includes('저장 완료'));
+  assert(h.get('schedule-calendar').innerHTML.includes('11:00'));assert(h.get('schedule-calendar').innerHTML.includes('title="새 매장"'));assert(h.get('admin-schedule-message').textContent.includes('저장 완료'));
 });
 test('failed save keeps form and does not report success or add a venue',async()=>{
   const h=harness();h.run('scheduleDataReady=true;');h.get('admin-schedule-kind').value='visit';h.get('admin-schedule-date').value='2026-11-02';h.get('admin-schedule-venue').value='입력 보존';
@@ -78,4 +80,16 @@ test('a successful save invalidates an older in-flight refresh',async()=>{
   await h.ctx.adminSaveSchedule({preventDefault(){}});
   pending[0]([]);pending[1]([]);await refresh;
   assert.equal(h.run('scheduleEvents[0].venue'),'방금 저장');
+});
+
+test('calendar official names split brand and branch, unverified names retain all words',()=>{
+  const h=harness();
+  const runner=h.ctx.getCalendarVenue('논현 러너펍');
+  assert.equal(runner.name,'러너펍 논현점');assert.deepEqual(Array.from(runner.lines),['러너펍','논현점']);
+  const unknown=h.ctx.getCalendarVenue('수원 인계 치즈펍');
+  assert.equal(unknown.verified,false);assert.equal(unknown.lines.join(' '),'수원 인계 치즈펍');assert.equal(unknown.lines.length,2);
+  const direct=h.ctx.getCalendarVenue('러너펍 논현점');assert.equal(direct.name,runner.name);
+  h.ctx.rows=[record({venue:'논현 러너펍'})];h.run("scheduleEvents=rows;rebuildScheduleMonths('2026-10-01');");
+  const result=h.run('renderScheduleCalendar(flattenSchedule(SCHEDULE_DATA[9]),9,null)');
+  assert(result.includes('러너펍 논현점'));assert.equal((result.match(/class="schedule-venue-line"/g)||[]).length,2);
 });

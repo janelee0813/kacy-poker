@@ -142,6 +142,11 @@
   .schedule-day-number { display:inline-flex; align-items:center; justify-content:center; width:23px; height:23px; border-radius:50%; font-size:12px; font-weight:700; }
   .schedule-day[aria-current="date"] .schedule-day-number { background:#b566ff; color:#0a0612; }
   .schedule-event { display:block; width:100%; border-radius:4px; padding:3px; background:rgba(181,102,255,.13); color:#e1c3ff; font-size:10px; line-height:1.4; overflow-wrap:anywhere; overflow:hidden; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; }
+  .schedule-event-venue { display:block; -webkit-line-clamp:unset; text-align:center; }
+  .schedule-venue-line { display:block; min-height:1.4em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .schedule-venue-line-long { font-size:8px; }
+  .schedule-event-time { display:block; margin-bottom:2px; font-size:9px; color:#85d5ff; }
+  @media(min-width:640px) { .schedule-venue-line-long { font-size:11px; } }
   .schedule-event-banner { background:rgba(255,181,71,.12); color:#ffcc80; }
   .schedule-sunday { color:#ff8ebc; }
   .schedule-saturday { color:#85d5ff; }
@@ -892,7 +897,7 @@
     return list;
   }
 
-  function renderScheduleEntries(entries, monthKey, todayDay, rsvpMap, allowRsvp){
+  function renderScheduleEntries(entries, monthKey, todayDay, rsvpMap, allowRsvp, officialNames = false){
     let html = '';
     let i = 0;
     let first = true;
@@ -930,7 +935,7 @@
           <div>
             <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
               <span class="shrink-0 rounded-lg border ${accent.border} ${accent.bg} px-2.5 py-1.5 text-center text-[12px] font-bold ${accent.text}">${monthKey + 1}/${it.day}<span class="ml-1 font-normal text-muted-foreground">(${dayName})</span></span>
-              <span class="min-w-0 flex-1 break-words text-[13.5px] text-foreground/85">${escapeHtml(it.venue)}${it.time ? '<span class="ml-2 text-xs text-neon-blue">' + escapeHtml(it.time.slice(0,5)) + '</span>' : ''}</span>
+              <span class="min-w-0 flex-1 break-words text-[13.5px] text-foreground/85">${escapeHtml(officialNames ? getCalendarVenue(it.venue).name : it.venue)}${it.time ? '<span class="ml-2 text-xs text-neon-blue">' + escapeHtml(it.time.slice(0,5)) + '</span>' : ''}</span>
               ${isToday ? '<span class="shrink-0 rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-bold text-success">오늘</span>' : ''}
               <div class="flex w-full shrink-0 justify-end gap-1.5 sm:w-auto">
                 <a href="${mapUrl}" target="_blank" rel="noopener" class="shrink-0 rounded-full border border-border px-2.5 py-1.5 text-[11px] font-semibold text-muted-foreground transition-colors hover:border-neon-purple/50 hover:text-neon-purple">📍 위치</a>
@@ -973,11 +978,15 @@
     for (let day = 1; day <= daysInMonth; day++) {
       const dayEntries = scheduleEntriesForDay(entries, day);
       const weekday = (firstWeekday + day - 1) % 7;
-      const labels = dayEntries.map(function(entry){ return entry.kind === 'banner' ? entry.text : entry.venue; });
+      const labels = dayEntries.map(function(entry){ return entry.kind === 'banner' ? entry.text : getCalendarVenue(entry.venue).name; });
       const label = (monthKey + 1) + '월 ' + day + '일 ' + DAY_NAMES[weekday] + '요일, ' + (labels.join(', ') || '일정 없음');
       cells += `<button type="button" class="schedule-day" onclick="scheduleSelectDay(${day})" aria-label="${escapeHtml(label)}" aria-pressed="${day === scheduleSelectedDay}" aria-controls="schedule-day-detail" ${day === todayDay ? 'aria-current="date"' : ''}>
         <span class="schedule-day-number ${weekday === 0 ? 'schedule-sunday' : weekday === 6 ? 'schedule-saturday' : ''}">${day}</span>
-        ${dayEntries.map(function(entry){ return `<span class="schedule-event ${entry.kind === 'banner' ? 'schedule-event-banner' : ''}">${escapeHtml((entry.time ? entry.time.slice(0,5) + ' ' : '') + (entry.kind === 'banner' ? entry.emoji + ' ' + (entry.calendarText || entry.text) : entry.venue))}</span>`; }).join('')}
+        ${dayEntries.map(function(entry){
+          if (entry.kind === 'banner') return `<span class="schedule-event schedule-event-banner">${escapeHtml((entry.time ? entry.time.slice(0,5) + ' ' : '') + entry.emoji + ' ' + (entry.calendarText || entry.text))}</span>`;
+          const venue = getCalendarVenue(entry.venue);
+          return `<span class="schedule-event schedule-event-venue" title="${escapeHtml(venue.name)}">${entry.time ? `<span class="schedule-event-time">${escapeHtml(entry.time.slice(0,5))}</span>` : ''}${venue.lines.map(function(line){return `<span class="schedule-venue-line${Array.from(line).length > 4 ? ' schedule-venue-line-long' : ''}">${escapeHtml(line)}</span>`;}).join('')}</span>`;
+        }).join('')}
       </button>`;
     }
     const trailing = (7 - (firstWeekday + daysInMonth) % 7) % 7;
@@ -998,7 +1007,7 @@
     const isPast = date < today;
     const isToday = date.getTime() === today.getTime();
     el.innerHTML = `<h3 class="mb-3 text-sm font-bold">${monthKey + 1}월 ${day}일 (${DAY_NAMES[date.getDay()]})${isPast ? ' · 완료된 일정' : ''}</h3>` +
-      (entries.length ? renderScheduleEntries(entries, monthKey, isToday ? day : null, scheduleRsvpMap, !isPast) : '<p class="text-xs text-muted-foreground">등록된 일정이 없어요.</p>');
+      (entries.length ? renderScheduleEntries(entries, monthKey, isToday ? day : null, scheduleRsvpMap, !isPast, true) : '<p class="text-xs text-muted-foreground">등록된 일정이 없어요.</p>');
   }
 
   async function renderSchedule(){

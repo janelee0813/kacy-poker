@@ -43,3 +43,31 @@ function openTmap(event) {
     help.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 }
+
+// Calendar labels use verified Naver Place names without changing stored venue IDs/names.
+// Runner branches, Bigstack and Stadium names rechecked via Naver Map on 2026-09-28.
+function getCalendarVenue(venue) {
+  const original = String(venue || '').trim();
+  const place = getVenueLocation(original) || Object.values(VENUE_LOCATIONS).find(function(p){ return p.name === original; });
+  const name = place ? place.name : original;
+  const words = name.split(/\s+/);
+  let lines;
+  if (place && words.length > 1) {
+    lines = [words.slice(0, -1).join(' '), words[words.length - 1]];
+  } else if (name === '더블유에프피스타디움') {
+    lines = ['더블유에프피', '스타디움'];
+  } else if (words.length > 1) {
+    // Keep every word and its original order when the branch is unverified.
+    let split = 1, best = Infinity;
+    for (let i = 1; i < words.length; i++) {
+      const difference = Math.abs(words.slice(0, i).join(' ').length - words.slice(i).join(' ').length);
+      if (difference < best) { split = i; best = difference; }
+    }
+    lines = [words.slice(0, split).join(' '), words.slice(split).join(' ')];
+  } else {
+    const characters = Array.from(name);
+    const split = Math.ceil(characters.length / 2);
+    lines = [characters.slice(0, split).join(''), characters.slice(split).join('')];
+  }
+  return { name: name, lines: lines, verified: !!place };
+}
